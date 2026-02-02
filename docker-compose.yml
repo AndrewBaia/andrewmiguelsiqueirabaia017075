@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: artista-album-postgres
+    environment:
+      POSTGRES_DB: artist_album_db
+      POSTGRES_USER: artist_user
+      POSTGRES_PASSWORD: artist_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - artist-network
+
+  minio:
+    image: minio/minio
+    container_name: artista-album-minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - artist-network
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: artista-album-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/artist_album_db
+      SPRING_DATASOURCE_USERNAME: artist_user
+      SPRING_DATASOURCE_PASSWORD: artist_pass
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      JWT_SECRET: mySecretKey1234567890123456789012345678901234567890
+      JWT_EXPIRATION: 300000
+    depends_on:
+      - postgres
+      - minio
+    networks:
+      - artist-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: artista-album-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - api
+    networks:
+      - artist-network
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  artist-network:
+    driver: bridge
