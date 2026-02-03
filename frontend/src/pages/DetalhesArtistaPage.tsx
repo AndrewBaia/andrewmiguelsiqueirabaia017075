@@ -9,10 +9,10 @@ import {
   Trash2,
   ChevronLeft,
   Music,
-  Calendar,
   MoreVertical,
   Disc,
-  UserX
+  UserX,
+  User
 } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
@@ -101,14 +101,11 @@ const DetalhesArtistaPage: React.FC = () => {
   return (
     <div className="space-y-10">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-indigo-950 p-8 md:p-12 text-white">
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
-        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-indigo-400 rounded-full blur-3xl opacity-10"></div>
-
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-b from-[#282828] to-[#121212] p-8 md:p-12 text-white shadow-xl">
         <div className="relative z-10">
           <Link
             to="/artistas"
-            className="inline-flex items-center text-indigo-200 hover:text-white font-semibold mb-8 transition-colors group"
+            className="inline-flex items-center text-spotify-subtext hover:text-white font-semibold mb-8 transition-colors group"
           >
             <ChevronLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
             Voltar para Artistas
@@ -116,44 +113,45 @@ const DetalhesArtistaPage: React.FC = () => {
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="flex items-center gap-6">
-              <div className="h-24 w-24 md:h-32 md:w-32 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
-                <Disc className="h-12 w-12 md:h-16 md:w-16 text-white" />
+              <div className="h-24 w-24 md:h-48 md:w-48 rounded-full bg-[#282828] flex items-center justify-center shadow-2xl overflow-hidden">
+                <User className="h-12 w-12 md:h-24 md:w-24 text-spotify-subtext" />
               </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
+              <div className="flex flex-col justify-end h-full py-2">
+                <span className="text-xs md:text-sm font-bold uppercase tracking-widest text-white mb-2 flex items-center gap-2">
+                  <span className="bg-spotify-green h-2 w-2 rounded-full inline-block"></span>
+                  Artista Verificado
+                </span>
+                <h1 className="text-4xl md:text-7xl font-extrabold tracking-tighter mb-4 text-white">
                   {artist.nome}
                 </h1>
-                <div className="flex items-center gap-4 text-indigo-100 font-medium">
-                  <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-sm">
-                    <Music className="h-4 w-4" />
-                    {albums.length} {albums.length === 1 ? 'Álbum' : 'Álbuns'}
-                  </span>
+                <div className="flex items-center gap-4 text-white font-medium text-sm md:text-base">
+                  <span>{albums.length} {albums.length === 1 ? 'lançamento' : 'lançamentos'}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to={`/artistas/${id}/albuns/novo`}
+                className="btn btn-primary px-8 py-3 rounded-full font-bold tracking-wider text-xs md:text-sm transform hover:scale-105 transition-all"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                NOVO ÁLBUM
+              </Link>
+              <Link
+                to={`/artistas/${id}/editar`}
+                className="btn bg-transparent border border-[#535353] hover:border-white text-white px-6 py-3 rounded-full font-bold text-xs md:text-sm tracking-wider uppercase"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                EDITAR
+              </Link>
               <button
                 onClick={handleDeleteArtist}
-                className="btn bg-rose-500/10 hover:bg-rose-500/20 text-rose-200 hover:text-white border border-rose-500/20 transition-all font-bold px-4"
+                className="btn bg-transparent border border-[#535353] hover:border-spotify-error text-spotify-subtext hover:text-white hover:bg-spotify-error px-4 py-3 rounded-full transition-colors"
                 title="Excluir Artista"
               >
                 <UserX className="h-5 w-5" />
               </button>
-              <Link
-                to={`/artistas/${id}/editar`}
-                className="btn bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/10 transition-all font-bold px-6"
-              >
-                <Pencil className="h-5 w-5 mr-2" />
-                Editar Perfil
-              </Link>
-              <Link
-                to={`/artistas/${id}/albuns/novo`}
-                className="btn bg-white text-indigo-950 hover:bg-indigo-50 shadow-xl transition-all font-bold px-6"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Adicionar Novo Álbum
-              </Link>
             </div>
           </div>
         </div>
@@ -161,39 +159,35 @@ const DetalhesArtistaPage: React.FC = () => {
 
       {/* Albums Section */}
       <section>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <div className="flex items-center justify-between mb-6 border-b border-[#282828] pb-4">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
             Discografia
-            <span className="text-sm font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
-              {albums.length}
-            </span>
           </h2>
         </div>
 
         {albums.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {albums.map((album) => (
-              <div key={album.id} className="card card-hover flex flex-col group">
+              <div key={album.id} className="card bg-[#181818] hover:bg-[#282828] p-4 rounded-md transition-all duration-300 group">
                 {/* Cover Image Placeholder/Actual */}
-                <div className="aspect-square w-full relative overflow-hidden bg-slate-100">
+                <div className="aspect-square w-full relative overflow-hidden bg-[#282828] rounded-md mb-4 shadow-lg">
                   {album.urlImagemCapaAssinada ? (
                     <img
                       src={album.urlImagemCapaAssinada}
                       alt={`Capa de ${album.titulo}`}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
-                      <Disc className="h-20 w-20 mb-2" />
-                      <span className="text-sm font-bold opacity-50">Sem Capa</span>
+                    <div className="w-full h-full flex flex-col items-center justify-center text-[#535353]">
+                      <Music className="h-16 w-16 mb-2 opacity-50" />
                     </div>
                   )}
 
                   {/* Overlay Controls */}
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Menu as="div" className="relative">
-                      <Menu.Button className="h-10 w-10 bg-white/90 backdrop-blur shadow-xl rounded-full flex items-center justify-center text-slate-700 hover:text-indigo-600 transition-colors">
-                        <MoreVertical className="h-5 w-5" />
+                      <Menu.Button className="h-8 w-8 bg-black/60 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black transition-colors">
+                        <MoreVertical className="h-4 w-4" />
                       </Menu.Button>
                       <Transition
                         as={Fragment}
@@ -204,18 +198,18 @@ const DetalhesArtistaPage: React.FC = () => {
                         leaveFrom="transform opacity-100 scale-100"
                         leaveTo="transform opacity-0 scale-95"
                       >
-                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right divide-y divide-slate-100 rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden">
+                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right divide-y divide-[#333] rounded-md bg-[#282828] shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden z-20">
                           <div className="px-1 py-1">
                             <Menu.Item>
                               {({ active }) => (
                                 <Link
                                   to={`/albuns/${album.id}/editar`}
                                   className={`${
-                                    active ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700'
-                                  } group flex w-full items-center rounded-lg px-3 py-2 text-sm font-semibold`}
+                                    active ? 'bg-[#333] text-white' : 'text-spotify-subtext'
+                                  } group flex w-full items-center rounded-sm px-3 py-2 text-sm font-medium`}
                                 >
                                   <Pencil className="mr-3 h-4 w-4" />
-                                  Editar Álbum
+                                  Editar
                                 </Link>
                               )}
                             </Menu.Item>
@@ -226,11 +220,11 @@ const DetalhesArtistaPage: React.FC = () => {
                                 <button
                                   onClick={() => handleDeleteAlbum(album.id!)}
                                   className={`${
-                                    active ? 'bg-rose-50 text-rose-600' : 'text-slate-700'
-                                  } group flex w-full items-center rounded-lg px-3 py-2 text-sm font-semibold`}
+                                    active ? 'bg-[#333] text-white' : 'text-spotify-subtext'
+                                  } group flex w-full items-center rounded-sm px-3 py-2 text-sm font-medium hover:text-spotify-error`}
                                 >
                                   <Trash2 className="mr-3 h-4 w-4" />
-                                  Excluir Álbum
+                                  Excluir
                                 </button>
                               )}
                             </Menu.Item>
@@ -241,30 +235,27 @@ const DetalhesArtistaPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                <div>
+                  <h3 className="text-base font-bold text-white mb-1 truncate group-hover:text-white transition-colors">
                     {album.titulo}
                   </h3>
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
-                      <Calendar className="h-4 w-4 text-slate-400" />
-                      <span>Data de lançamento indisponível</span>
-                    </div>
+                  <div className="flex items-center gap-2 text-spotify-subtext text-sm font-medium">
+                    <span>{new Date(album.dataCriacao || '').getFullYear() || 'Ano desconhecido'} • Álbum</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-            <div className="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-              <Disc className="h-8 w-8 text-slate-300" />
+          <div className="text-center py-20 bg-transparent rounded-lg border border-dashed border-[#282828]">
+            <div className="mx-auto h-16 w-16 bg-[#282828] rounded-full flex items-center justify-center mb-4">
+              <Disc className="h-8 w-8 text-spotify-subtext" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Nenhum álbum adicionado ainda</h3>
-            <p className="text-slate-500 mb-8 max-w-xs mx-auto">Este artista ainda não foi vinculado a nenhum álbum na sua coleção.</p>
+            <h3 className="text-lg font-bold text-white mb-2">Nenhum álbum adicionado ainda</h3>
+            <p className="text-spotify-subtext mb-8 max-w-xs mx-auto">Este artista ainda não tem lançamentos na sua galeria.</p>
             <Link
               to={`/artistas/${id}/albuns/novo`}
-              className="btn btn-secondary shadow-sm font-bold"
+              className="btn btn-secondary rounded-full px-8 py-3 font-bold text-sm tracking-wider uppercase border-[#535353] hover:border-white text-white"
             >
               Adicionar Primeiro Álbum
             </Link>
