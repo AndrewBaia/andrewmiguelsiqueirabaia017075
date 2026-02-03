@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { apiService } from '../services/api';
+import { appFacade } from '../services/facade';
 import { Artist, Album } from '../types';
 import { useNotifications } from '../context/NotificationContext';
 import {
@@ -26,6 +26,20 @@ const DetalhesArtistaPage: React.FC = () => {
   const { addNotification } = useNotifications();
 
   useEffect(() => {
+    const albumsSubscription = appFacade.albums$.subscribe((data: Album[]) => {
+      setAlbums(data);
+    });
+    const loadingSubscription = appFacade.loadingAlbums$.subscribe((isLoading: boolean) => {
+      setLoading(isLoading);
+    });
+
+    return () => {
+      albumsSubscription.unsubscribe();
+      loadingSubscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     if (id) {
       loadArtistAndAlbums();
     }
@@ -35,26 +49,20 @@ const DetalhesArtistaPage: React.FC = () => {
     if (!id) return;
 
     try {
-      setLoading(true);
-      const [artistData, albumsData] = await Promise.all([
-        apiService.getArtist(parseInt(id)),
-        apiService.getAllAlbumsByArtist(parseInt(id))
-      ]);
+      const artistData = await appFacade.getArtistById(parseInt(id));
       setArtist(artistData);
-      setAlbums(albumsData);
+      await appFacade.loadAlbumsByArtist(parseInt(id));
     } catch (error) {
       addNotification('Falha ao carregar detalhes do artista', 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDeleteAlbum = async (albumId: number) => {
     if (window.confirm('Tem certeza que deseja excluir este álbum?')) {
       try {
-        await apiService.deleteAlbum(albumId);
+        await appFacade.deleteAlbum(albumId);
         addNotification('Álbum excluído com sucesso', 'success');
-        setAlbums(albums.filter(a => a.id !== albumId));
+        if (id) appFacade.loadAlbumsByArtist(parseInt(id));
       } catch (error) {
         addNotification('Falha ao excluir álbum', 'error');
       }
@@ -66,7 +74,7 @@ const DetalhesArtistaPage: React.FC = () => {
 
     if (window.confirm(`Tem certeza que deseja excluir "${artist.nome}" e todos os seus álbuns? Esta ação não poderá ser desfeita.`)) {
       try {
-        await apiService.deleteArtist(parseInt(id));
+        await appFacade.deleteArtist(parseInt(id));
         addNotification('Artista excluído com sucesso', 'success');
         navigate('/artistas');
       } catch (error) {
@@ -75,13 +83,13 @@ const DetalhesArtistaPage: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading && !artist) {
     return (
       <div className="animate-pulse space-y-8">
-        <div className="h-64 bg-slate-100 rounded-3xl"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-72 bg-slate-50 rounded-2xl border border-slate-100"></div>
+        <div className="h-64 bg-[#282828] rounded-lg"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-72 bg-[#181818] rounded-md border border-[#282828]"></div>
           ))}
         </div>
       </div>
@@ -90,10 +98,10 @@ const DetalhesArtistaPage: React.FC = () => {
 
   if (!artist) {
     return (
-      <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Artista não encontrado</h2>
-        <p className="text-slate-500 mb-8">O artista que você está procurando não existe ou foi removido.</p>
-        <Link to="/artistas" className="btn btn-primary px-8">Voltar para Artistas</Link>
+      <div className="text-center py-20 bg-[#181818] rounded-lg border border-[#282828] shadow-sm">
+        <h2 className="text-2xl font-bold text-white mb-2">Artista não encontrado</h2>
+        <p className="text-spotify-subtext mb-8">O artista que você está procurando não existe ou foi removido.</p>
+        <Link to="/artistas" className="btn btn-primary px-8 rounded-full font-bold">Voltar para Artistas</Link>
       </div>
     );
   }

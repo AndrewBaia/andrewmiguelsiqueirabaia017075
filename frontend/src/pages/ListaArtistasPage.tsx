@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { apiService } from '../services/api';
+import { appFacade } from '../services/facade';
 import { Artist, PaginatedResponse } from '../types';
 import { useNotifications } from '../context/NotificationContext';
 import {
@@ -22,15 +22,25 @@ const ListaArtistasPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const { addNotification } = useNotifications();
 
+  useEffect(() => {
+    const subscription = appFacade.paginatedArtists$.subscribe((data: PaginatedResponse<Artist> | null) => {
+      setArtists(data);
+    });
+    const loadingSubscription = appFacade.loadingArtists$.subscribe((isLoading: boolean) => {
+      setLoading(isLoading);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      loadingSubscription.unsubscribe();
+    };
+  }, []);
+
   const loadArtists = async () => {
     try {
-      setLoading(true);
-      const data = await apiService.getArtists(currentPage, 12, sortDirection, searchTerm || undefined);
-      setArtists(data);
+      await appFacade.loadArtists(currentPage, 12, sortDirection, searchTerm || undefined);
     } catch (error) {
       addNotification('Falha ao carregar artistas', 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -89,7 +99,7 @@ const ListaArtistasPage: React.FC = () => {
       {loading && !artists ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="card h-64 animate-pulse bg-[#181818]"></div>
+            <div key={i} className="card h-64 animate-pulse bg-[#181818] border border-[#282828]"></div>
           ))}
         </div>
       ) : artists && artists.content.length > 0 ? (
