@@ -42,6 +42,7 @@ class ArtistaServiceTest {
     void setUp() {
         artista = new Artista("Artista de Teste");
         artista.setId(1L);
+        artista.setAlbuns(new java.util.ArrayList<>()); // Inicializa a lista
     }
 
     @Test
@@ -68,8 +69,12 @@ class ArtistaServiceTest {
     @Test
     void obterArtistaPorId_DeveRetornarArtista_QuandoExiste() {
         // Dado
+        // Adicionamos álbuns fictícios à lista do artista para o size() retornar 3
+        artista.getAlbuns().add(new com.seplag.artistalbum.domain.model.Album());
+        artista.getAlbuns().add(new com.seplag.artistalbum.domain.model.Album());
+        artista.getAlbuns().add(new com.seplag.artistalbum.domain.model.Album());
+
         when(artistaRepository.findById(1L)).thenReturn(Optional.of(artista));
-        when(albumRepository.countByArtistaId(1L)).thenReturn(3L);
 
         // Quando
         com.seplag.artistalbum.application.dto.ArtistaDTO resultado = artistaService.obterArtistaPorId(1L);
