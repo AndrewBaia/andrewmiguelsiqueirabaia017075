@@ -16,7 +16,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if ("admin".equals(username)) {
             return User.builder()
                     .username("admin")
-                    .password("{noop}admin123") // senha: admin123
+                    .password("{noop}admin321") // senha: admin321
                     .roles("ADMIN")
                     .build();
         }

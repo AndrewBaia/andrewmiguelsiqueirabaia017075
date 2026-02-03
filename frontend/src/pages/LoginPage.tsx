@@ -137,11 +137,11 @@ const LoginPage: React.FC = () => {
                 className="p-3 rounded-md bg-[#282828] border border-transparent hover:border-[#404040] transition-colors cursor-pointer group w-full"
                 onClick={() => {
                   setValue('username', 'admin');
-                  setValue('password', 'admin123');
+                  setValue('password', 'admin321');
                 }}
               >
                 <p className="text-[10px] font-bold text-spotify-subtext uppercase mb-1 group-hover:text-white transition-colors">Credenciais (Clique para preencher)</p>
-                <p className="text-sm font-bold text-white">admin / admin123</p>
+                <p className="text-sm font-bold text-white">admin / admin321</p>
               </button>
             </div>
           </form>
