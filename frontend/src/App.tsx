@@ -9,6 +9,7 @@ import FormularioArtistaPage from './pages/FormularioArtistaPage';
 import FormularioAlbumPage from './pages/FormularioAlbumPage';
 import Layout from './components/Layout';
 import NotificationContainer from './components/NotificationContainer';
+import { TokenRenewalModal } from './components/TokenRenewalModal';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -35,6 +36,7 @@ function App() {
       <NotificationProvider>
         <div className="min-h-screen bg-gray-50">
           <NotificationContainer />
+          <TokenRenewalModal />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route
