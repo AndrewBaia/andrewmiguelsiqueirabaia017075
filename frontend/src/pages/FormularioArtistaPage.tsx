@@ -110,45 +110,45 @@ const FormularioArtistaPage: React.FC = () => {
         <div>
           <Link
             to="/artistas"
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold mb-4 transition-colors group"
+            className="inline-flex items-center text-spotify-subtext hover:text-white font-semibold mb-4 transition-colors group"
           >
             <ChevronLeft className="h-5 w-5 mr-1 group-hover:-translate-x-1 transition-transform" />
             Voltar para Artistas
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-white tracking-tight">
             {isEditing ? 'Editar Artista' : 'Criar Artista'}
           </h1>
         </div>
-        <p className="text-slate-500 font-medium ml-16">
+        <p className="text-spotify-subtext font-medium md:ml-16">
           {isEditing
             ? `Atualize as informações de ${formData.nome}`
             : 'Adicione um novo artista à sua galeria musical'}
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+      <div className="bg-[#181818] rounded-lg shadow-xl border border-[#282828] overflow-hidden">
         <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-8">
           <div className="space-y-6">
             <div>
-              <label htmlFor="nome" className="label text-base">
-                Nome do Artista <span className="text-rose-500">*</span>
+              <label htmlFor="nome" className="label text-base text-white font-bold mb-2">
+                Nome do Artista <span className="text-spotify-green">*</span>
               </label>
               <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-spotify-subtext group-focus-within:text-white transition-colors" />
                 <input
                   type="text"
                   id="nome"
                   name="nome"
                   value={formData.nome}
                   onChange={handleChange}
-                  className={`input pl-12 py-3 text-lg ${errors.nome ? 'border-rose-500 focus:ring-rose-500' : ''}`}
+                  className={`input pl-12 py-3 text-lg bg-[#282828] border-transparent text-white placeholder-spotify-subtext rounded-full focus:bg-[#333] focus:ring-white ${errors.nome ? 'border-spotify-error focus:ring-spotify-error' : ''}`}
                   placeholder="ex: Pink Floyd"
                   disabled={loading}
                   autoFocus
                 />
               </div>
               {errors.nome && (
-                <div className="mt-3 flex items-center gap-2 text-rose-600 animate-in fade-in slide-in-from-top-1">
+                <div className="mt-3 flex items-center gap-2 text-spotify-error animate-in fade-in slide-in-from-top-1">
                   <AlertCircle className="h-4 w-4" />
                   <p className="text-sm font-bold">{errors.nome}</p>
                 </div>
@@ -156,15 +156,15 @@ const FormularioArtistaPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-4">
+          <div className="pt-6 border-t border-[#282828] flex flex-col sm:flex-row gap-4">
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary flex-1 py-4 text-lg shadow-indigo-200"
+              className="btn btn-primary flex-1 py-4 text-lg rounded-full font-bold tracking-wider uppercase transform hover:scale-[1.02] transition-all"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-5 w-5 text-black" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -173,17 +173,17 @@ const FormularioArtistaPage: React.FC = () => {
               ) : (
                 <span className="flex items-center gap-2">
                   {isEditing ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-                  {isEditing ? 'Atualizar Artista' : 'Criar Artista'}
+                  {isEditing ? 'ATUALIZAR ARTISTA' : 'CRIAR ARTISTA'}
                 </span>
               )}
             </button>
             <Link
               to="/artistas"
-              className="btn btn-secondary flex-1 py-4 text-lg shadow-sm"
+              className="btn btn-secondary flex-1 py-4 text-lg rounded-full font-bold tracking-wider uppercase border-[#535353] hover:border-white text-white bg-transparent"
             >
               <span className="flex items-center gap-2">
                 <X className="h-5 w-5" />
-                Cancelar
+                CANCELAR
               </span>
             </Link>
           </div>
