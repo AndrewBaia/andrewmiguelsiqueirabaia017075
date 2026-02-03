@@ -11,19 +11,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Para fins de demonstração, estamos utilizando usuários fixos (hardcoded).
+        // Para fins de demonstração, estamos utilizando um usuário fixo (hardcoded) para avaliação.
         // Em uma aplicação real, deve-se buscar o usuário no banco de dados.
         if ("admin".equals(username)) {
             return User.builder()
                     .username("admin")
-                    .password("{noop}admin123456") // senha: admin123456
+                    .password("{noop}admin123") // senha: admin123
                     .roles("ADMIN")
-                    .build();
-        } else if ("user".equals(username)) {
-            return User.builder()
-                    .username("user")
-                    .password("{noop}user123456") // senha: user123456
-                    .roles("USER")
                     .build();
         }
 

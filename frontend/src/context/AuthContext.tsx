@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (token) {
       setIsAuthenticated(true);
-      setUser({ username: storedUsername || 'Usuário', role: 'ADMIN' });
+      setUser({ username: storedUsername || 'Admin', role: 'ADMIN' });
       if (storedExp) {
         setTokenExpiration(parseInt(storedExp));
       }

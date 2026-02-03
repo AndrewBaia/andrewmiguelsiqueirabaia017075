@@ -22,6 +22,7 @@ const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -42,65 +43,65 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px]">
+    <div className="min-h-screen flex items-center justify-center bg-spotify-base py-12 px-4 sm:px-6 lg:px-8 bg-[linear-gradient(to_bottom,#121212,black)]">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-200">
-            <Music2 className="h-10 w-10 text-white" />
+          <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-spotify-green shadow-2xl shadow-green-900/20 mb-6">
+            <Music2 className="h-10 w-10 text-black" />
           </div>
-          <h2 className="mt-8 text-3xl font-extrabold text-slate-900 tracking-tight">
-            Galeria de Artistas
+          <h2 className="text-4xl font-extrabold text-white tracking-tight mb-2">
+            Galeria
           </h2>
-          <p className="mt-2 text-slate-500 font-medium">
-            Gerencie sua coleção musical com facilidade
+          <p className="text-spotify-subtext font-medium text-lg">
+            Música para todos.
           </p>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100">
+        <div className="bg-spotify-highlight p-8 rounded-lg shadow-2xl border border-[#282828]">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {error && (
-              <div className="rounded-xl bg-rose-50 p-4 border border-rose-100 flex items-center gap-3 animate-shake">
-                <AlertCircle className="h-5 w-5 text-rose-600 flex-shrink-0" />
-                <p className="text-sm font-semibold text-rose-700">{error}</p>
+              <div className="rounded-md bg-spotify-error/10 p-4 border border-spotify-error/20 flex items-center gap-3 animate-shake">
+                <AlertCircle className="h-5 w-5 text-spotify-error flex-shrink-0" />
+                <p className="text-sm font-semibold text-spotify-error">{error}</p>
               </div>
             )}
 
             <div className="space-y-4">
               <div>
-                <label className="label" htmlFor="username">Nome de usuário</label>
+                <label className="label uppercase tracking-widest text-xs" htmlFor="username">Usuário</label>
                 <div className="relative group">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-spotify-subtext group-focus-within:text-white transition-colors" />
                   <input
                     {...register('username')}
                     id="username"
                     type="text"
                     autoComplete="username"
                     required
-                    className={`input pl-11 ${errors.username ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-                    placeholder="Digite seu nome de usuário"
+                    className={`input pl-11 rounded-full ${errors.username ? 'border-spotify-error focus:ring-spotify-error' : ''}`}
+                    placeholder="Nome de usuário"
                   />
                 </div>
                 {errors.username && (
-                  <p className="mt-1.5 text-xs font-semibold text-rose-600">{errors.username.message}</p>
+                  <p className="mt-1.5 text-xs font-semibold text-spotify-error">{errors.username.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="label" htmlFor="password">Senha</label>
+                <label className="label uppercase tracking-widest text-xs" htmlFor="password">Senha</label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-spotify-subtext group-focus-within:text-white transition-colors" />
                   <input
                     {...register('password')}
                     id="password"
                     type="password"
                     autoComplete="current-password"
                     required
-                    className={`input pl-11 ${errors.password ? 'border-rose-500 focus:ring-rose-500' : ''}`}
-                    placeholder="••••••••"
+                    className={`input pl-11 rounded-full ${errors.password ? 'border-spotify-error focus:ring-spotify-error' : ''}`}
+                    placeholder="Senha"
                   />
                 </div>
                 {errors.password && (
-                  <p className="mt-1.5 text-xs font-semibold text-rose-600">{errors.password.message}</p>
+                  <p className="mt-1.5 text-xs font-semibold text-spotify-error">{errors.password.message}</p>
                 )}
               </div>
             </div>
@@ -108,37 +109,40 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary w-full py-3 text-base shadow-indigo-100"
+              className="btn btn-primary w-full py-3.5 text-base tracking-widest shadow-none hover:scale-[1.02] transform transition-all duration-200"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-5 w-5 text-black" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Entrando...
+                  Conectando...
                 </span>
-              ) : 'Entrar'}
+              ) : 'ENTRAR'}
             </button>
 
             <div className="relative py-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100"></div>
+                <div className="w-full border-t border-[#333]"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-slate-400 font-bold tracking-wider">Acesso Demo</span>
+                <span className="bg-spotify-highlight px-3 text-spotify-subtext font-bold tracking-widest">Acesso Avaliador</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Admin</p>
-                <p className="text-xs font-semibold text-slate-600">admin / admin123</p>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Usuário</p>
-                <p className="text-xs font-semibold text-slate-600">user / user123</p>
-              </div>
+            <div className="grid grid-cols-1 gap-3 text-center">
+              <button
+                type="button"
+                className="p-3 rounded-md bg-[#282828] border border-transparent hover:border-[#404040] transition-colors cursor-pointer group w-full"
+                onClick={() => {
+                  setValue('username', 'admin');
+                  setValue('password', 'admin123');
+                }}
+              >
+                <p className="text-[10px] font-bold text-spotify-subtext uppercase mb-1 group-hover:text-white transition-colors">Credenciais (Clique para preencher)</p>
+                <p className="text-sm font-bold text-white">admin / admin123</p>
+              </button>
             </div>
           </form>
         </div>
