@@ -19,11 +19,5 @@ public interface ArtistaRepository extends JpaRepository<Artista, Long> {
 
     @Query("SELECT a FROM Artista a WHERE LOWER(a.nome) LIKE LOWER(CONCAT('%', :nome, '%'))")
     Page<Artista> findByNomeContainingIgnoreCase(@Param("nome") String nome, Pageable paginacao);
-
-    @Query("SELECT a FROM Artista a ORDER BY a.nome ASC")
-    Page<Artista> findAllOrderByNomeAsc(Pageable paginacao);
-
-    @Query("SELECT a FROM Artista a ORDER BY a.nome DESC")
-    Page<Artista> findAllOrderByNomeDesc(Pageable paginacao);
 }
 

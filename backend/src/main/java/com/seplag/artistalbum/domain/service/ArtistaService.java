@@ -10,6 +10,8 @@ import com.seplag.artistalbum.domain.port.ArtistaRepository;
 import com.seplag.artistalbum.domain.port.AlbumRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,12 +41,18 @@ public class ArtistaService {
      * @return Página de ArtistaDTO.
      */
     public Page<ArtistaDTO> obterTodosArtistas(Pageable paginacao, String direcaoOrdenacao) {
-        Page<Artista> artistas;
-        if ("desc".equalsIgnoreCase(direcaoOrdenacao)) {
-            artistas = artistaRepository.findAllOrderByNomeDesc(paginacao);
-        } else {
-            artistas = artistaRepository.findAllOrderByNomeAsc(paginacao);
-        }
+        // Criar um novo Pageable com a ordenação correta se não vier no objeto original
+        Sort sort = "desc".equalsIgnoreCase(direcaoOrdenacao) 
+                ? Sort.by("nome").descending() 
+                : Sort.by("nome").ascending();
+        
+        Pageable paginacaoComOrdenacao = PageRequest.of(
+                paginacao.getPageNumber(), 
+                paginacao.getPageSize(), 
+                sort
+        );
+
+        Page<Artista> artistas = artistaRepository.findAll(paginacaoComOrdenacao);
         return artistas.map(this::converterParaDTO);
     }
 

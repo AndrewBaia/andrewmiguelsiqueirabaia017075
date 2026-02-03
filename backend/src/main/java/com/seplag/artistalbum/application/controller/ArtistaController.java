@@ -30,7 +30,7 @@ public class ArtistaController {
     public ResponseEntity<Page<ArtistaDTO>> obterTodosArtistas(
             @Parameter(description = "Número da página (baseado em 0)") @RequestParam(defaultValue = "0") int pagina,
             @Parameter(description = "Número de itens por página") @RequestParam(defaultValue = "10") int tamanho,
-            @Parameter(description = "Direção da ordenação (asc ou desc)") @RequestParam(defaultValue = "asc") String ordenacao) {
+            @Parameter(description = "Direção da ordenação (asc ou desc)") @RequestParam(defaultValue = "asc", name = "sort") String ordenacao) {
 
         Pageable paginacao = PageRequest.of(pagina, tamanho);
         Page<ArtistaDTO> artistas = artistaService.obterTodosArtistas(paginacao, ordenacao);

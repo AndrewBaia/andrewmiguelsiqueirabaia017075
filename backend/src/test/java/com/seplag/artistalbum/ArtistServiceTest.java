@@ -51,7 +51,8 @@ class ArtistaServiceTest {
         List<Artista> artistas = List.of(artista);
         Page<Artista> paginaArtista = new PageImpl<>(artistas, paginacao, 1);
 
-        when(artistaRepository.findAllOrderByNomeAsc(paginacao)).thenReturn(paginaArtista);
+        // O serviço agora chama findAll(Pageable) internamente, aplicando a ordenação
+        when(artistaRepository.findAll(any(Pageable.class))).thenReturn(paginaArtista);
         when(albumRepository.countByArtistaId(1L)).thenReturn(5L);
 
         // Quando
@@ -61,6 +62,7 @@ class ArtistaServiceTest {
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getContent().get(0).getNome()).isEqualTo("Artista de Teste");
         assertThat(resultado.getContent().get(0).getQuantidadeAlbuns()).isEqualTo(5);
+        verify(artistaRepository).findAll(any(Pageable.class));
     }
 
     @Test
