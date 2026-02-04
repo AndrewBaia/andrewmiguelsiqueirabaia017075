@@ -119,46 +119,46 @@ const DetalhesArtistaPage: React.FC = () => {
             Voltar para Artistas
           </Link>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="flex items-center gap-6">
-              <div className="h-24 w-24 md:h-48 md:w-48 rounded-full bg-[#282828] flex items-center justify-center shadow-2xl overflow-hidden">
-                <User className="h-12 w-12 md:h-24 md:w-24 text-spotify-subtext" />
+          <div className="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-8">
+            <div className="flex items-center gap-4 md:gap-6 min-w-0">
+              <div className="h-20 w-20 md:h-32 lg:h-40 2xl:h-48 rounded-full bg-[#282828] flex items-center justify-center shadow-2xl overflow-hidden shrink-0">
+                <User className="h-10 w-10 md:h-16 lg:h-20 2xl:h-24 text-spotify-subtext" />
               </div>
-              <div className="flex flex-col justify-end h-full py-2">
-                <span className="text-xs md:text-sm font-bold uppercase tracking-widest text-white mb-2 flex items-center gap-2">
+              <div className="flex flex-col justify-end py-2 min-w-0">
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white mb-2 flex items-center gap-2">
                   <span className="bg-spotify-green h-2 w-2 rounded-full inline-block"></span>
                   Artista Verificado
                 </span>
-                <h1 className="text-4xl md:text-7xl font-extrabold tracking-tighter mb-4 text-white">
+                <h1 className="text-2xl md:text-4xl lg:text-5xl 2xl:text-6xl font-extrabold tracking-tighter mb-4 text-white break-words leading-none">
                   {artist.nome}
                 </h1>
-                <div className="flex items-center gap-4 text-white font-medium text-sm md:text-base">
+                <div className="flex items-center gap-4 text-white font-medium text-xs md:text-sm lg:text-base">
                   <span>{albums.length} {albums.length === 1 ? 'lançamento' : 'lançamentos'}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-row flex-wrap items-center gap-2 md:gap-3 mt-6 2xl:mt-0 shrink-0">
               <Link
                 to={`/artistas/${id}/albuns/novo`}
-                className="btn btn-primary px-8 py-3 rounded-full font-bold tracking-wider text-xs md:text-sm transform hover:scale-105 transition-all"
+                className="btn btn-primary px-3 md:px-6 py-2.5 md:py-3 rounded-full font-bold tracking-wider text-[10px] md:text-xs lg:text-sm transform hover:scale-105 transition-all flex items-center"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                NOVO ÁLBUM
+                <Plus className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" />
+                <span className="whitespace-nowrap">NOVO ÁLBUM</span>
               </Link>
               <Link
                 to={`/artistas/${id}/editar`}
-                className="btn bg-transparent border border-[#535353] hover:border-white text-white px-6 py-3 rounded-full font-bold text-xs md:text-sm tracking-wider uppercase"
+                className="btn bg-transparent border border-[#535353] hover:border-white text-white px-3 md:px-6 py-2.5 md:py-3 rounded-full font-bold text-[10px] md:text-xs lg:text-sm tracking-wider uppercase flex items-center"
               >
-                <Pencil className="h-4 w-4 mr-2" />
-                EDITAR
+                <Pencil className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                <span className="whitespace-nowrap">EDITAR</span>
               </Link>
               <button
                 onClick={handleDeleteArtist}
-                className="btn bg-transparent border border-[#535353] hover:border-spotify-error text-spotify-subtext hover:text-white hover:bg-spotify-error px-4 py-3 rounded-full transition-colors"
+                className="btn bg-transparent border border-[#535353] hover:border-spotify-error text-spotify-subtext hover:text-white hover:bg-spotify-error px-3 md:px-4 py-2.5 md:py-3 rounded-full transition-colors flex items-center justify-center"
                 title="Excluir Artista"
               >
-                <UserX className="h-5 w-5" />
+                <UserX className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </div>
           </div>
