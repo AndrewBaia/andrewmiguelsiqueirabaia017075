@@ -30,8 +30,6 @@ class AppFacade {
   // Métodos de Artista
   async loadArtists(page = 0, size = 10, sort = 'asc', search?: string) {
     this.loadingArtistsSubject.next(true);
-    // Não limpamos a lista aqui para permitir "infinite scroll" ou paginação suave no futuro,
-    // mas para a busca, poderíamos limpar.
     try {
       const data = await apiService.getArtists(page, size, sort, search);
       this.paginatedArtistsSubject.next(data);
@@ -45,6 +43,10 @@ class AppFacade {
   }
 
   async getArtistById(id: number): Promise<Artist> {
+    // Tenta encontrar no cache do Subject primeiro
+    const cached = this.artistsSubject.value.find(a => a.id === id);
+    if (cached) return cached;
+    
     return await apiService.getArtist(id);
   }
 
