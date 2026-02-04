@@ -111,8 +111,16 @@ const ListaArtistasPage: React.FC = () => {
                 to={`/artistas/${artist.id}`}
                 className="card card-hover group flex flex-col p-6 items-center text-center bg-[#181818] hover:bg-[#282828] rounded-md transition-colors"
               >
-                <div className="h-32 w-32 rounded-full bg-[#282828] group-hover:bg-[#333] flex items-center justify-center mb-6 shadow-2xl transition-all duration-300 transform group-hover:scale-105">
-                  <User className="h-12 w-12 text-spotify-subtext group-hover:text-white transition-colors duration-300" />
+                <div className="h-32 w-32 rounded-full bg-[#282828] group-hover:bg-[#333] flex items-center justify-center mb-6 shadow-2xl transition-all duration-300 transform group-hover:scale-105 overflow-hidden">
+                  {artist.urlImagemPerfilAssinada ? (
+                    <img 
+                      src={artist.urlImagemPerfilAssinada} 
+                      alt={artist.nome} 
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-12 w-12 text-spotify-subtext group-hover:text-white transition-colors duration-300" />
+                  )}
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2 truncate w-full">
                   {artist.nome}

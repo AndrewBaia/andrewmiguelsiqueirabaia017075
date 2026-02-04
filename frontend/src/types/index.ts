@@ -1,6 +1,8 @@
 export interface Artist {
   id: number;
   nome: string;
+  urlImagemPerfil?: string;
+  urlImagemPerfilAssinada?: string;
   quantidadeAlbuns?: number;
   albuns?: Album[];
   dataCriacao?: string;

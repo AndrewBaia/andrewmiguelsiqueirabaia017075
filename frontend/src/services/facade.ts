@@ -65,6 +65,18 @@ class AppFacade {
     await apiService.deleteArtist(id);
   }
 
+  async uploadArtistPhoto(artistId: number, file: File) {
+    const updated = await apiService.uploadArtistPhoto(artistId, file);
+    // Atualiza o cache do artista se ele estiver na lista
+    const currentArtists = this.artistsSubject.value;
+    const index = currentArtists.findIndex(a => a.id === artistId);
+    if (index !== -1) {
+      currentArtists[index] = updated;
+      this.artistsSubject.next([...currentArtists]);
+    }
+    return updated;
+  }
+
   // Métodos de Álbum
   async loadAlbumsByArtist(artistId: number, sort = 'asc') {
     this.loadingAlbumsSubject.next(true);

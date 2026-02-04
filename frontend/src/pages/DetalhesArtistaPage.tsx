@@ -12,10 +12,11 @@ import {
   MoreVertical,
   Disc,
   UserX,
-  User
+  User,
+  Camera
 } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useRef } from 'react';
 
 const DetalhesArtistaPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,8 @@ const DetalhesArtistaPage: React.FC = () => {
   const [artist, setArtist] = useState<Artist | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { addNotification } = useNotifications();
 
   useEffect(() => {
@@ -55,6 +58,26 @@ const DetalhesArtistaPage: React.FC = () => {
     } catch (error) {
       addNotification('Falha ao carregar detalhes do artista', 'error');
     }
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !id) return;
+
+    setUploadingPhoto(true);
+    try {
+      const updatedArtist = await appFacade.uploadArtistPhoto(parseInt(id), file);
+      setArtist(updatedArtist);
+      addNotification('Foto de perfil atualizada com sucesso', 'success');
+    } catch (error) {
+      addNotification('Falha ao fazer upload da foto', 'error');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const handleDeleteAlbum = async (albumId: number) => {
@@ -121,8 +144,38 @@ const DetalhesArtistaPage: React.FC = () => {
 
           <div className="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-8">
             <div className="flex items-center gap-4 md:gap-6 min-w-0">
-              <div className="h-20 w-20 md:h-32 lg:h-40 2xl:h-48 rounded-full bg-[#282828] flex items-center justify-center shadow-2xl overflow-hidden shrink-0">
-                <User className="h-10 w-10 md:h-16 lg:h-20 2xl:h-24 text-spotify-subtext" />
+              <div 
+                className="h-20 w-20 md:h-32 md:w-32 lg:h-40 lg:w-40 2xl:h-48 2xl:w-48 rounded-full bg-[#282828] flex items-center justify-center shadow-2xl overflow-hidden shrink-0 relative group cursor-pointer border-4 border-transparent hover:border-spotify-green transition-all"
+                onClick={triggerFileInput}
+                title="Clique para alterar a foto do artista"
+              >
+                {artist.urlImagemPerfilAssinada ? (
+                  <img 
+                    src={artist.urlImagemPerfilAssinada} 
+                    alt={artist.nome} 
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <User className="h-10 w-10 md:h-16 lg:h-20 2xl:h-24 text-spotify-subtext" />
+                )}
+                
+                {/* Overlay de Upload */}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="h-6 w-6 md:h-8 md:w-8 lg:h-10 lg:w-10 text-white" />
+                </div>
+                
+                {uploadingPhoto && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-spotify-green"></div>
+                  </div>
+                )}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handlePhotoUpload} 
+                />
               </div>
               <div className="flex flex-col justify-end py-2 min-w-0">
                 <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white mb-2 flex items-center gap-2">

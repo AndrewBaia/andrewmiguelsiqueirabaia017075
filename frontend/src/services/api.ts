@@ -106,6 +106,14 @@ class ApiService {
     await this.api.delete(`/v1/artistas/${id}`);
   }
 
+  async uploadArtistPhoto(artistId: number, file: File): Promise<Artist> {
+    const formData = new FormData();
+    formData.append('arquivo', file);
+
+    const response = await this.api.post<Artist>(`/v1/artistas/${artistId}/foto`, formData);
+    return response.data;
+  }
+
   // Album methods
   async getAlbumsByArtist(artistId: number, page = 0, size = 10): Promise<PaginatedResponse<Album>> {
     const params = new URLSearchParams({
