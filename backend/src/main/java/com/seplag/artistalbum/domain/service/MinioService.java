@@ -83,7 +83,8 @@ public class MinioService {
                         .build()
         );
 
-        // Substitui o hostname interno do Docker para acesso externo pelo frontend
+        // Se estiver rodando fora do Docker (localhost), precisamos garantir que a URL aponte para localhost
+        // O MinIO retorna a URL baseada no endpoint configurado (que no Docker é 'minio:9000')
         if (url.contains("minio:9000")) {
             url = url.replace("minio:9000", "localhost:9000");
         }

@@ -22,7 +22,7 @@ import org.springframework.core.io.Resource;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/albums")
+@RequestMapping("/v1/albuns")
 @Tag(name = "Álbuns", description = "APIs de gerenciamento de álbuns")
 public class AlbumController {
 
