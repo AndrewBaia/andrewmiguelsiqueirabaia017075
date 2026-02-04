@@ -27,8 +27,8 @@ public class RegionalSyncService {
     private final RegionalRepository regionalRepository;
     private final ObjectMapper objectMapper;
 
-    @Value("${external.api.police-regionals}")
-    private String policeRegionalsUrl;
+    @Value("${external.api.police-regionais}")
+    private String policeRegionaisUrl;
 
     public RegionalSyncService(WebClient.Builder webClientBuilder,
                               RegionalRepository regionalRepository,
@@ -39,14 +39,14 @@ public class RegionalSyncService {
     }
 
     @Scheduled(fixedRate = 3600000) // Executa a cada hora
-    public void syncRegionals() {
+    public void sincronizarRegionais() {
         logger.info("Iniciando sincronização das regionais com a API da Polícia");
 
         try {
-            List<Map<String, Object>> externalRegionals = fetchExternalRegionals();
+            List<Map<String, Object>> regionaisExternas = buscarRegionaisExternas();
 
-            if (externalRegionals != null && !externalRegionals.isEmpty()) {
-                syncRegionalsData(externalRegionals);
+            if (regionaisExternas != null && !regionaisExternas.isEmpty()) {
+                sincronizarDadosRegionais(regionaisExternas);
                 logger.info("Sincronização das regionais concluída com sucesso");
             } else {
                 logger.warn("Nenhum dado de regionais recebido da API externa");
@@ -57,7 +57,7 @@ public class RegionalSyncService {
     }
 
     @Transactional
-    public void syncRegionalsData(List<Map<String, Object>> externalRegionals) {
+    public void sincronizarDadosRegionais(List<Map<String, Object>> regionaisExternas) {
         // Buscar regionais ativas atualmente no banco de dados
         List<Regional> regionaisAtivasAtuais = regionalRepository.findByAtivoTrue();
         Set<String> nomesAtivosAtuais = regionaisAtivasAtuais.stream()
@@ -65,14 +65,14 @@ public class RegionalSyncService {
                 .collect(Collectors.toSet());
 
         // Buscar nomes vindos da fonte externa
-        Set<String> nomesExternos = externalRegionals.stream()
+        Set<String> nomesExternos = regionaisExternas.stream()
                 .filter(regional -> regional.containsKey("nome") && regional.get("nome") != null)
                 .map(regional -> regional.get("nome").toString())
                 .collect(Collectors.toSet());
 
         // Processar cada regional vinda da API externa
-        for (Map<String, Object> externalRegional : externalRegionals) {
-            String nome = externalRegional.get("nome").toString();
+        for (Map<String, Object> regionalExterna : regionaisExternas) {
+            String nome = regionalExterna.get("nome").toString();
 
             if (nome != null && !nome.trim().isEmpty()) {
                 processarRegional(nome, nomesAtivosAtuais, nomesExternos);
@@ -114,10 +114,10 @@ public class RegionalSyncService {
         }
     }
 
-    private List<Map<String, Object>> fetchExternalRegionals() {
+    private List<Map<String, Object>> buscarRegionaisExternas() {
         try {
             Mono<String> response = webClient.get()
-                    .uri(policeRegionalsUrl)
+                    .uri(policeRegionaisUrl)
                     .retrieve()
                     .bodyToMono(String.class);
 
@@ -129,8 +129,7 @@ public class RegionalSyncService {
         }
     }
 
-    public List<Regional> getActiveRegionals() {
+    public List<Regional> obterRegionaisAtivas() {
         return regionalRepository.findActiveOrderByNome();
     }
 }
-

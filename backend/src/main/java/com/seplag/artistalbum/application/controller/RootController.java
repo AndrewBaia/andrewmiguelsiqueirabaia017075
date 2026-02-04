@@ -28,7 +28,7 @@ public class RootController {
         endpoints.put("auth", "/auth");
         endpoints.put("artistas", "/v1/artistas");
         endpoints.put("albums", "/v1/albums");
-        endpoints.put("regionals", "/v1/regionals");
+        endpoints.put("regionais", "/v1/regionais");
         info.put("endpoints", endpoints);
         
         return ResponseEntity.ok(info);

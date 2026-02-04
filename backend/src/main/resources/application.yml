@@ -45,7 +45,7 @@ jwt:
 
 external:
   api:
-    police-regionals: https://integrador-argus-api.geia.vip/v1/regionais
+    police-regionais: https://integrador-argus-api.geia.vip/v1/regionais
 
 management:
   endpoints:
