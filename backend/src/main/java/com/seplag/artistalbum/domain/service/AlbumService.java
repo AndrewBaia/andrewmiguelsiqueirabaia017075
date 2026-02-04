@@ -190,9 +190,9 @@ public class AlbumService {
                 album.getDataAtualizacao()
         );
 
-        // Adiciona url pública de acesso à capa se existir
+        // URL direta via proxy do backend para evitar problemas de assinatura/CORS com o MinIO no frontend
         if (album.getUrlImagemCapa() != null) {
-            dto.setUrlImagemCapaAssinada("/api/v1/albums/capa/" + album.getId());
+            dto.setUrlImagemCapaAssinada("/api/v1/albuns/capa/" + album.getId());
         }
 
         return dto;
