@@ -28,7 +28,8 @@ public class InterceptadorLimiteTaxa implements HandlerInterceptor {
             long aguardarReabastecimento = sonda.getNanosToWaitForRefill() / 1_000_000_000;
             resposta.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(aguardarReabastecimento));
             resposta.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            resposta.getWriter().write("Muitas requisições. Tente novamente mais tarde.");
+            resposta.setContentType("application/json;charset=UTF-8");
+            resposta.getWriter().write("{\"mensagem\": \"Rate limit de 10 requisições alcançada, tente novamente em 1 minuto\"}");
             return false;
         }
     }

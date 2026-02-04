@@ -22,10 +22,15 @@ class ApiService {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor to handle token refresh
+    // Response interceptor to handle token refresh and global errors
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
+        if (error.response?.status === 429) {
+          const mensagem = error.response.data?.mensagem || 'Rate limit de 10 requisições alcançada, tente novamente em 1 minuto';
+          alert(mensagem); // Alerta global para o Rate Limit
+        }
+
         if (error.response?.status === 401) {
           // Token expired, try to refresh
           const refreshToken = localStorage.getItem('refreshToken');
@@ -107,39 +112,39 @@ class ApiService {
       page: page.toString(),
       size: size.toString(),
     });
-    const response = await this.api.get<PaginatedResponse<Album>>(`/v1/albums/artista/${artistId}?${params}`);
+    const response = await this.api.get<PaginatedResponse<Album>>(`/v1/albuns/artista/${artistId}?${params}`);
     return response.data;
   }
 
   async getAllAlbumsByArtist(artistId: number, sort = 'asc'): Promise<Album[]> {
-    const response = await this.api.get<Album[]>(`/v1/albums/artista/${artistId}/todos?ordenacao=${sort}`);
+    const response = await this.api.get<Album[]>(`/v1/albuns/artista/${artistId}/todos?ordenacao=${sort}`);
     return response.data;
   }
 
   async getAlbum(id: number): Promise<Album> {
-    const response = await this.api.get<Album>(`/v1/albums/${id}`);
+    const response = await this.api.get<Album>(`/v1/albuns/${id}`);
     return response.data;
   }
 
   async createAlbum(album: CreateAlbumRequest): Promise<Album> {
-    const response = await this.api.post<Album>('/v1/albums', album);
+    const response = await this.api.post<Album>('/v1/albuns', album);
     return response.data;
   }
 
   async updateAlbum(id: number, album: CreateAlbumRequest): Promise<Album> {
-    const response = await this.api.put<Album>(`/v1/albums/${id}`, album);
+    const response = await this.api.put<Album>(`/v1/albuns/${id}`, album);
     return response.data;
   }
 
   async deleteAlbum(id: number): Promise<void> {
-    await this.api.delete(`/v1/albums/${id}`);
+    await this.api.delete(`/v1/albuns/${id}`);
   }
 
   async uploadAlbumCover(albumId: number, file: File): Promise<Album> {
     const formData = new FormData();
     formData.append('arquivo', file);
 
-    const response = await this.api.post<Album>(`/v1/albums/${albumId}/capa`, formData);
+    const response = await this.api.post<Album>(`/v1/albuns/${albumId}/capa`, formData);
     return response.data;
   }
 }

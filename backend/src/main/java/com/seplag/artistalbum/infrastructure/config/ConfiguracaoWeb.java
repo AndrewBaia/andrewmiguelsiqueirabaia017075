@@ -16,8 +16,16 @@ public class ConfiguracaoWeb implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registro) {
         registro.addInterceptor(interceptadorLimiteTaxa)
-                .addPathPatterns("/api/v1/**")
-                .excludePathPatterns("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**");
+                .addPathPatterns("/v1/**", "/api/v1/**")
+                .excludePathPatterns(
+                    "/api/auth/**", 
+                    "/auth/**",
+                    "/swagger-ui/**", 
+                    "/v3/api-docs/**", 
+                    "/actuator/**",
+                    "/v1/albuns/capa/**",
+                    "/api/v1/albuns/capa/**"
+                );
     }
 }
 
