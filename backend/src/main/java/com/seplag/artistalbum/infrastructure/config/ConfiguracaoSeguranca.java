@@ -43,7 +43,7 @@ public class ConfiguracaoSeguranca {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
-                .requestMatchers("/v1/albums/capa/**").permitAll()
+                .requestMatchers("/v1/albuns/capa/**").permitAll()
                 .requestMatchers("/").permitAll()
                 .anyRequest().authenticated()
 
@@ -70,11 +70,11 @@ public class ConfiguracaoSeguranca {
     @Bean
     public CorsConfigurationSource fonteConfiguracaoCors() {
         CorsConfiguration configuracao = new CorsConfiguration();
-        configuracao.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuracao.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001"));
         configuracao.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuracao.setAllowedHeaders(Arrays.asList("*"));
+        configuracao.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
         configuracao.setAllowCredentials(true);
-        configuracao.setMaxAge(3600L); // Cache preflight por 1 hora
+        configuracao.setMaxAge(3600L);
         configuracao.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource fonte = new UrlBasedCorsConfigurationSource();
