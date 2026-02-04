@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { LoginRequest, LoginResponse } from '../types';
 import { apiService } from '../services/api';
+import { useRateLimit } from './RateLimitContext';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -19,6 +20,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const { resetRateLimit } = useRateLimit();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ username: string; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsAuthenticated(false);
     setUser(null);
     setTokenExpiration(null);
-  }, []);
+    resetRateLimit(); // Limpa o cronômetro do Rate Limit ao sair
+  }, [resetRateLimit]);
 
   const refreshToken = useCallback(async () => {
     try {
@@ -73,6 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       setUser({ username: credentials.username, role: 'ADMIN' });
       setTokenExpiration(expirationTime);
+      resetRateLimit(); // Limpa o Rate Limit ao fazer login com sucesso
     } catch (error) {
       throw error;
     }

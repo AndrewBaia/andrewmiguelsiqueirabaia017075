@@ -16,6 +16,11 @@ class AppFacade {
   private albumsSubject = new BehaviorSubject<Album[]>([]);
   private loadingAlbumsSubject = new BehaviorSubject<boolean>(false);
 
+  // Cache de Álbuns por Artista e Ordenação
+  // Chave: `${artistId}-${sort}`
+  private albumsCache = new Map<string, { data: Album[], timestamp: number }>();
+  private CACHE_TTL = 2 * 60 * 1000; // 2 minutos em milissegundos
+
   // Observables públicos
   public artists$: Observable<Artist[]> = this.artistsSubject.asObservable();
   public paginatedArtists$: Observable<PaginatedResponse<Artist> | null> = this.paginatedArtistsSubject.asObservable();
@@ -34,8 +39,11 @@ class AppFacade {
       const data = await apiService.getArtists(page, size, sort, search);
       this.paginatedArtistsSubject.next(data);
       this.artistsSubject.next(data.content);
-    } catch (error) {
-      console.error('Erro ao carregar artistas:', error);
+    } catch (error: any) {
+      // Se for erro de Rate Limit, não loga como erro de carregamento para evitar confusão
+      if (error.response?.status !== 429) {
+        console.error('Erro ao carregar artistas:', error);
+      }
       throw error;
     } finally {
       this.loadingArtistsSubject.next(false);
@@ -79,10 +87,24 @@ class AppFacade {
 
   // Métodos de Álbum
   async loadAlbumsByArtist(artistId: number, sort = 'asc') {
+    const cacheKey = `${artistId}-${sort}`;
+    const cached = this.albumsCache.get(cacheKey);
+    const now = Date.now();
+
+    // Se tiver no cache e não expirou, usa o cache
+    if (cached && (now - cached.timestamp < this.CACHE_TTL)) {
+      this.albumsSubject.next(cached.data);
+      return;
+    }
+
     this.loadingAlbumsSubject.next(true);
-    this.albumsSubject.next([]); // Limpa a lista anterior para evitar "ghost data" ou confusão visual
+    this.albumsSubject.next([]); // Limpa a lista anterior para evitar "ghost data"
     try {
       const data = await apiService.getAllAlbumsByArtist(artistId, sort);
+      
+      // Salva no cache
+      this.albumsCache.set(cacheKey, { data, timestamp: now });
+      
       this.albumsSubject.next(data);
     } catch (error) {
       console.error('Erro ao carregar álbuns:', error);
@@ -92,20 +114,41 @@ class AppFacade {
     }
   }
 
+  /**
+   * Limpa o cache de um artista específico (útil após criar/editar/deletar álbum)
+   */
+  private clearAlbumCache(artistId: number) {
+    const keys = Array.from(this.albumsCache.keys());
+    keys.forEach(key => {
+      if (key.startsWith(`${artistId}-`)) {
+        this.albumsCache.delete(key);
+      }
+    });
+  }
+
   async createAlbum(album: CreateAlbumRequest) {
-    return await apiService.createAlbum(album);
+    const result = await apiService.createAlbum(album);
+    this.clearAlbumCache(album.idArtista);
+    return result;
   }
 
   async updateAlbum(id: number, album: CreateAlbumRequest) {
-    return await apiService.updateAlbum(id, album);
+    const result = await apiService.updateAlbum(id, album);
+    this.clearAlbumCache(album.idArtista);
+    return result;
   }
 
   async deleteAlbum(id: number) {
+    // Como o delete não recebe o artistaId, precisamos encontrar o álbum no cache para saber qual artista limpar
+    // Ou simplesmente limpar todo o cache de álbuns para segurança
     await apiService.deleteAlbum(id);
+    this.albumsCache.clear();
   }
 
   async uploadAlbumCover(albumId: number, file: File) {
-    return await apiService.uploadAlbumCover(albumId, file);
+    const result = await apiService.uploadAlbumCover(albumId, file);
+    this.albumsCache.clear(); // Limpa para garantir que a nova capa seja carregada
+    return result;
   }
 }
 

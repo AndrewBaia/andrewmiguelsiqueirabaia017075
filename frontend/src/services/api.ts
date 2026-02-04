@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { LoginRequest, LoginResponse, Artist, Album, CreateArtistRequest, CreateAlbumRequest, PaginatedResponse } from '../types';
+import { triggerGlobalRateLimit } from '../context/RateLimitContext';
 
 class ApiService {
   private api: AxiosInstance;
@@ -27,8 +28,7 @@ class ApiService {
       (response) => response,
       async (error) => {
         if (error.response?.status === 429) {
-          const mensagem = error.response.data?.mensagem || 'Rate limit de 10 requisições alcançada, tente novamente em 1 minuto';
-          alert(mensagem); // Alerta global para o Rate Limit
+          triggerGlobalRateLimit(60); // Dispara o modal global de Rate Limit
         }
 
         if (error.response?.status === 401) {

@@ -10,6 +10,8 @@ import FormularioAlbumPage from './pages/FormularioAlbumPage';
 import Layout from './components/Layout';
 import NotificationContainer from './components/NotificationContainer';
 import { TokenRenewalModal } from './components/TokenRenewalModal';
+import { RateLimitProvider, RateLimitInitializer } from './context/RateLimitContext';
+import RateLimitModal from './components/RateLimitModal';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -32,33 +34,37 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <div className="min-h-screen bg-gray-50">
-          <NotificationContainer />
-          <TokenRenewalModal />
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<ListaArtistasPage />} />
-              <Route path="artistas" element={<ListaArtistasPage />} />
-              <Route path="artistas/:id" element={<DetalhesArtistaPage />} />
-              <Route path="artistas/novo" element={<FormularioArtistaPage />} />
-              <Route path="artistas/:id/editar" element={<FormularioArtistaPage />} />
-              <Route path="artistas/:idArtista/albuns/novo" element={<FormularioAlbumPage />} />
-              <Route path="albuns/:id/editar" element={<FormularioAlbumPage />} />
-            </Route>
-          </Routes>
-        </div>
-      </NotificationProvider>
-    </AuthProvider>
+    <RateLimitProvider>
+      <RateLimitInitializer />
+      <AuthProvider>
+        <NotificationProvider>
+          <div className="min-h-screen bg-gray-50">
+            <NotificationContainer />
+            <TokenRenewalModal />
+            <RateLimitModal />
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<ListaArtistasPage />} />
+                <Route path="artistas" element={<ListaArtistasPage />} />
+                <Route path="artistas/:id" element={<DetalhesArtistaPage />} />
+                <Route path="artistas/novo" element={<FormularioArtistaPage />} />
+                <Route path="artistas/:id/editar" element={<FormularioArtistaPage />} />
+                <Route path="artistas/:idArtista/albuns/novo" element={<FormularioAlbumPage />} />
+                <Route path="albuns/:id/editar" element={<FormularioAlbumPage />} />
+              </Route>
+            </Routes>
+          </div>
+        </NotificationProvider>
+      </AuthProvider>
+    </RateLimitProvider>
   );
 }
 

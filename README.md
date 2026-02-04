@@ -93,22 +93,64 @@ npm test
 
 ---
 
+## 🚀 Endpoints da API
+
+A documentação interativa completa pode ser acessada via Swagger em: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+### Regionais
+APIs de gerenciamento das regionais da polícia.
+- `POST /v1/regionais/sincronizar`: Disparar sincronização manual das regionais.
+- `GET /v1/regionais`: Obter todas as regionais ativas.
+
+### Autenticação
+APIs de gerenciamento de autenticação.
+- `POST /auth/login`: Autenticar usuário e obter token JWT.
+- `POST /auth/refresh`: Renovar token JWT.
+
+### Artistas
+APIs de gerenciamento de artistas.
+- `GET /v1/artistas`: Listar todos os artistas com paginação e ordenação.
+- `GET /v1/artistas/{id}`: Obter artista por ID com álbuns.
+- `POST /v1/artistas`: Criar um novo artista.
+- `PUT /v1/artistas/{id}`: Atualizar um artista existente.
+- `DELETE /v1/artistas/{id}`: Excluir um artista.
+- `GET /v1/artistas/pesquisa`: Pesquisar artistas por nome.
+- `POST /v1/artistas/{id}/foto`: Fazer upload da foto de perfil do artista.
+- `GET /v1/artistas/foto/{idArtista}`: Obter foto de perfil do artista.
+
+### Álbuns
+APIs de gerenciamento de álbuns.
+- `POST /v1/albuns`: Criar um novo álbum.
+- `GET /v1/albuns/{id}`: Obter álbum por ID.
+- `PUT /v1/albuns/{id}`: Atualizar um álbum existente.
+- `DELETE /v1/albuns/{id}`: Excluir um álbum.
+- `GET /v1/albuns/artista/{idArtista}`: Obter álbuns por artista com paginação.
+- `GET /v1/albuns/artista/{idArtista}/todos`: Obter todos os álbuns por artista sem paginação.
+- `POST /v1/albuns/{id}/capa`: Fazer upload da imagem de capa do álbum.
+- `GET /v1/albuns/capa/{idAlbum}`: Obter imagem de capa do álbum.
+
+### API Raiz
+- `GET /`: Informações básicas da API.
+
+---
+
 ## 🗄️ Estrutura de Dados (Tabelas)
 
-### `artista`
-- `id` (SERIAL PRIMARY KEY)
+### `artist`
+- `id` (BIGSERIAL PRIMARY KEY)
 - `nome` (VARCHAR 255, UNIQUE)
-- `genero` (VARCHAR 100)
+- `url_imagem_perfil` (VARCHAR 255) - *Adicionado na migração V4*
+- `data_criacao`, `data_atualizacao` (TIMESTAMP)
 
 ### `album`
-- `id` (SERIAL PRIMARY KEY)
+- `id` (BIGSERIAL PRIMARY KEY)
 - `titulo` (VARCHAR 255)
-- `data_lancamento` (DATE)
-- `imagem_capa_key` (VARCHAR 500)
-- `artista_id` (FOREIGN KEY)
+- `artist_id` (BIGINT, FOREIGN KEY)
+- `url_imagem_capa` (VARCHAR 500)
+- `data_criacao`, `data_atualizacao` (TIMESTAMP)
 
 ### `regional`
-- `id` (INTEGER PRIMARY KEY)
+- `id` (BIGSERIAL PRIMARY KEY)
 - `nome` (VARCHAR 200)
 - `ativo` (BOOLEAN)
 - `created_at`, `updated_at` (TIMESTAMP)
