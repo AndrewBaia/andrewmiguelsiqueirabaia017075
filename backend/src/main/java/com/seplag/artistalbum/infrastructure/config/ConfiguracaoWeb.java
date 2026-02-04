@@ -24,7 +24,9 @@ public class ConfiguracaoWeb implements WebMvcConfigurer {
                     "/v3/api-docs/**", 
                     "/actuator/**",
                     "/v1/albuns/capa/**",
-                    "/api/v1/albuns/capa/**"
+                    "/api/v1/albuns/capa/**",
+                    "/v1/artistas/foto/**",
+                    "/api/v1/artistas/foto/**"
                 );
     }
 }

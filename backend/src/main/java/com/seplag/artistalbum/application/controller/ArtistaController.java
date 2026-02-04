@@ -13,6 +13,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/v1/artistas")
@@ -79,6 +83,52 @@ public class ArtistaController {
         artistaService.excluirArtista(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/foto")
+    @Operation(summary = "Fazer upload da foto de perfil do artista")
+    public ResponseEntity<ArtistaDTO> fazerUploadFotoPerfil(
+            @Parameter(description = "ID do artista") @PathVariable Long id,
+            @Parameter(description = "Arquivo da foto") @RequestParam("arquivo") MultipartFile arquivo) {
+
+        try {
+            String tipoConteudo = arquivo.getContentType();
+            if (tipoConteudo == null || !tipoConteudo.startsWith("image/")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            ArtistaDTO artista = artistaService.fazerUploadFotoPerfil(id, arquivo.getBytes(), arquivo.getOriginalFilename(), tipoConteudo);
+            return ResponseEntity.ok(artista);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/foto/{idArtista}")
+    @Operation(summary = "Obter foto de perfil do artista")
+    public ResponseEntity<Resource> obterFotoPerfilArtista(@Parameter(description = "ID do artista") @PathVariable Long idArtista) {
+        try {
+            ArtistaDTO artista = artistaService.obterArtistaPorId(idArtista);
+
+            if (artista.getUrlImagemPerfil() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            byte[] dadosImagem = artistaService.obterBytesFotoPerfil(artista.getUrlImagemPerfil());
+
+            String tipoConteudo = "image/jpeg";
+            if (artista.getUrlImagemPerfil().toLowerCase().endsWith(".png")) {
+                tipoConteudo = "image/png";
+            }
+
+            ByteArrayResource recurso = new ByteArrayResource(dadosImagem);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(tipoConteudo))
+                    .contentLength(dadosImagem.length)
+                    .body(recurso);
+
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
-
-

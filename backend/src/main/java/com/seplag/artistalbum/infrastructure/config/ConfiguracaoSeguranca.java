@@ -44,6 +44,7 @@ public class ConfiguracaoSeguranca {
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/v1/albuns/capa/**").permitAll()
+                .requestMatchers("/v1/artistas/foto/**").permitAll()
                 .requestMatchers("/").permitAll()
                 .anyRequest().authenticated()
 

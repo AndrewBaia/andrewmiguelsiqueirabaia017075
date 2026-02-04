@@ -18,6 +18,10 @@ public class ArtistaDTO {
 
     private Integer quantidadeAlbuns;
 
+    private String urlImagemPerfil;
+
+    private String urlImagemPerfilAssinada;
+
     private LocalDateTime dataCriacao;
 
     private LocalDateTime dataAtualizacao;
@@ -25,19 +29,21 @@ public class ArtistaDTO {
     public ArtistaDTO() {}
 
     public ArtistaDTO(Long id, String nome, List<AlbumDTO> albuns, Integer quantidadeAlbuns,
-                    LocalDateTime dataCriacao, LocalDateTime dataAtualizacao) {
+                    String urlImagemPerfil, LocalDateTime dataCriacao, LocalDateTime dataAtualizacao) {
         this.id = id;
         this.nome = nome;
         this.albuns = albuns;
         this.quantidadeAlbuns = quantidadeAlbuns;
+        this.urlImagemPerfil = urlImagemPerfil;
         this.dataCriacao = dataCriacao;
         this.dataAtualizacao = dataAtualizacao;
     }
 
-    public ArtistaDTO(Long id, String nome, Integer quantidadeAlbuns) {
+    public ArtistaDTO(Long id, String nome, Integer quantidadeAlbuns, String urlImagemPerfil) {
         this.id = id;
         this.nome = nome;
         this.quantidadeAlbuns = quantidadeAlbuns;
+        this.urlImagemPerfil = urlImagemPerfil;
     }
 
     public Long getId() {
@@ -70,6 +76,22 @@ public class ArtistaDTO {
 
     public void setQuantidadeAlbuns(Integer quantidadeAlbuns) {
         this.quantidadeAlbuns = quantidadeAlbuns;
+    }
+
+    public String getUrlImagemPerfil() {
+        return urlImagemPerfil;
+    }
+
+    public void setUrlImagemPerfil(String urlImagemPerfil) {
+        this.urlImagemPerfil = urlImagemPerfil;
+    }
+
+    public String getUrlImagemPerfilAssinada() {
+        return urlImagemPerfilAssinada;
+    }
+
+    public void setUrlImagemPerfilAssinada(String urlImagemPerfilAssinada) {
+        this.urlImagemPerfilAssinada = urlImagemPerfilAssinada;
     }
 
     public LocalDateTime getDataCriacao() {

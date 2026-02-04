@@ -24,6 +24,9 @@ public class Artista {
     @Column(nullable = false, unique = true)
     private String nome;
 
+    @Column(name = "url_imagem_perfil")
+    private String urlImagemPerfil;
+
     @OneToMany(mappedBy = "artista", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Album> albuns = new ArrayList<>();
 
@@ -55,6 +58,14 @@ public class Artista {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getUrlImagemPerfil() {
+        return urlImagemPerfil;
+    }
+
+    public void setUrlImagemPerfil(String urlImagemPerfil) {
+        this.urlImagemPerfil = urlImagemPerfil;
     }
 
     public List<Album> getAlbuns() {

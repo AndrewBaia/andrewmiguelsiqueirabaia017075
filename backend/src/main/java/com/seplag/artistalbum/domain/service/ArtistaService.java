@@ -27,10 +27,12 @@ public class ArtistaService {
 
     private final ArtistaRepository artistaRepository;
     private final AlbumRepository albumRepository;
+    private final MinioService minioService;
 
-    public ArtistaService(ArtistaRepository artistaRepository, AlbumRepository albumRepository) {
+    public ArtistaService(ArtistaRepository artistaRepository, AlbumRepository albumRepository, MinioService minioService) {
         this.artistaRepository = artistaRepository;
         this.albumRepository = albumRepository;
+        this.minioService = minioService;
     }
 
     /**
@@ -131,6 +133,33 @@ public class ArtistaService {
         artistaRepository.deleteById(id);
     }
 
+    public ArtistaDTO fazerUploadFotoPerfil(Long id, byte[] bytes, String originalFilename, String tipoConteudo) {
+        Artista artista = artistaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Artista não encontrado com id: " + id));
+
+        try {
+            // Remove foto antiga se existir
+            if (artista.getUrlImagemPerfil() != null) {
+                minioService.deleteFile(artista.getUrlImagemPerfil());
+            }
+
+            // Faz upload da nova foto
+            String chaveObjeto = "artist-photos/" + id + "/" + originalFilename;
+            minioService.uploadFile(chaveObjeto, bytes, tipoConteudo);
+
+            artista.setUrlImagemPerfil(chaveObjeto);
+            artista = artistaRepository.save(artista);
+
+            return converterParaDTOComAlbuns(artista);
+        } catch (Exception e) {
+            throw new RuntimeException("Falha ao fazer upload da foto de perfil", e);
+        }
+    }
+
+    public byte[] obterBytesFotoPerfil(String urlImagemPerfil) throws Exception {
+        return minioService.downloadFile(urlImagemPerfil);
+    }
+
     /**
      * Converte um objeto Artista para o respectivo DTO, incluindo a contagem de álbuns.
      *
@@ -139,7 +168,13 @@ public class ArtistaService {
      */
     private ArtistaDTO converterParaDTO(Artista artista) {
         Long quantidadeAlbuns = albumRepository.countByArtistaId(artista.getId());
-        return new ArtistaDTO(artista.getId(), artista.getNome(), quantidadeAlbuns.intValue());
+        ArtistaDTO dto = new ArtistaDTO(artista.getId(), artista.getNome(), quantidadeAlbuns.intValue(), artista.getUrlImagemPerfil());
+        
+        if (artista.getUrlImagemPerfil() != null) {
+            dto.setUrlImagemPerfilAssinada("/api/v1/artistas/foto/" + artista.getId());
+        }
+        
+        return dto;
     }
 
     /**
@@ -150,17 +185,31 @@ public class ArtistaService {
      */
     private ArtistaDTO converterParaDTOComAlbuns(Artista artista) {
         List<AlbumDTO> albunsDTO = artista.getAlbuns().stream()
-                .map(album -> new AlbumDTO(album.getId(), album.getTitulo(),
-                        album.getUrlImagemCapa(), null))
+                .map(album -> {
+                    AlbumDTO albumDto = new AlbumDTO(album.getId(), album.getTitulo(),
+                            album.getArtista().getId(), album.getArtista().getNome(),
+                            album.getUrlImagemCapa(), album.getDataCriacao(), album.getDataAtualizacao());
+                    if (album.getUrlImagemCapa() != null) {
+                        albumDto.setUrlImagemCapaAssinada("/api/v1/albuns/capa/" + album.getId());
+                    }
+                    return albumDto;
+                })
                 .collect(Collectors.toList());
 
-        return new ArtistaDTO(
+        ArtistaDTO dto = new ArtistaDTO(
                 artista.getId(),
                 artista.getNome(),
                 albunsDTO,
                 artista.getAlbuns().size(),
+                artista.getUrlImagemPerfil(),
                 artista.getDataCriacao(),
                 artista.getDataAtualizacao()
         );
+
+        if (artista.getUrlImagemPerfil() != null) {
+            dto.setUrlImagemPerfilAssinada("/api/v1/artistas/foto/" + artista.getId());
+        }
+
+        return dto;
     }
 }
