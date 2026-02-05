@@ -177,6 +177,7 @@ public class ArtistaService {
             // Requisito do Edital: Recuperação por links pré-assinados (30 min)
             try {
                 String urlS3Real = minioService.generatePresignedUrl(artista.getUrlImagemPerfil(), 30);
+                dto.setUrlS3Presigned(urlS3Real);
                 System.out.println("Link S3 (30min) para artista " + artista.getId() + ": " + urlS3Real);
             } catch (Exception e) {}
         }
@@ -203,6 +204,7 @@ public class ArtistaService {
                         // Requisito do Edital: Links pré-assinados (30 min)
                         try {
                             String urlS3Real = minioService.generatePresignedUrl(album.getUrlImagemCapa(), 30);
+                            albumDto.setUrlS3Presigned(urlS3Real);
                             System.out.println("Link S3 (30min) para álbum " + album.getId() + ": " + urlS3Real);
                         } catch (Exception e) {}
                     }
@@ -227,6 +229,7 @@ public class ArtistaService {
             // Requisito do Edital: Links pré-assinados (30 min)
             try {
                 String urlS3Real = minioService.generatePresignedUrl(artista.getUrlImagemPerfil(), 30);
+                dto.setUrlS3Presigned(urlS3Real);
                 System.out.println("Link S3 (30min) para artista " + artista.getId() + ": " + urlS3Real);
             } catch (Exception e) {}
         }

@@ -22,6 +22,8 @@ public class ArtistaDTO {
 
     private String urlImagemPerfilAssinada;
 
+    private String urlS3Presigned;
+
     private LocalDateTime dataCriacao;
 
     private LocalDateTime dataAtualizacao;
@@ -92,6 +94,14 @@ public class ArtistaDTO {
 
     public void setUrlImagemPerfilAssinada(String urlImagemPerfilAssinada) {
         this.urlImagemPerfilAssinada = urlImagemPerfilAssinada;
+    }
+
+    public String getUrlS3Presigned() {
+        return urlS3Presigned;
+    }
+
+    public void setUrlS3Presigned(String urlS3Presigned) {
+        this.urlS3Presigned = urlS3Presigned;
     }
 
     public LocalDateTime getDataCriacao() {

@@ -23,6 +23,8 @@ public class AlbumDTO {
 
     private String urlImagemCapaAssinada;
 
+    private String urlS3Presigned;
+
     private LocalDateTime dataCriacao;
 
     private LocalDateTime dataAtualizacao;
@@ -93,6 +95,14 @@ public class AlbumDTO {
 
     public void setUrlImagemCapaAssinada(String urlImagemCapaAssinada) {
         this.urlImagemCapaAssinada = urlImagemCapaAssinada;
+    }
+
+    public String getUrlS3Presigned() {
+        return urlS3Presigned;
+    }
+
+    public void setUrlS3Presigned(String urlS3Presigned) {
+        this.urlS3Presigned = urlS3Presigned;
     }
 
     public LocalDateTime getDataCriacao() {

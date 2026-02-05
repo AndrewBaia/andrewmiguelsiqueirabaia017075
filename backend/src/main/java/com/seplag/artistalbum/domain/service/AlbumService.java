@@ -199,6 +199,7 @@ public class AlbumService {
             // Geramos aqui para visualização no log/DevTools cumprindo a regra de negócio
             try {
                 String urlS3Real = minioService.generatePresignedUrl(album.getUrlImagemCapa(), 30);
+                dto.setUrlS3Presigned(urlS3Real);
                 System.out.println("Link S3 (30min) para álbum " + album.getId() + ": " + urlS3Real);
             } catch (Exception e) {
                 // Silencioso
