@@ -197,25 +197,123 @@ class AppFacade {
   }
 
   /**
-   * Manipula a criação de um álbum via WebSocket para atualização em tempo real
+   * Manipula a criação ou atualização de um artista via WebSocket
+   */
+  handleWebSocketArtistCreate(artist: Artist) {
+    // 1. Limpa o cache de artistas paginados para forçar recarga na próxima navegação
+    // Mas mantemos o objeto atual para não quebrar a tela de listagem
+    const currentPaginated = this.paginatedArtistsSubject.value;
+    if (currentPaginated) {
+      const updatedContent = [...currentPaginated.content];
+      const index = updatedContent.findIndex(a => a.id === artist.id);
+      
+      if (index !== -1) {
+        updatedContent[index] = artist;
+      } else {
+        updatedContent.unshift(artist);
+      }
+      
+      this.paginatedArtistsSubject.next({
+        ...currentPaginated,
+        content: updatedContent,
+        totalElements: index === -1 ? currentPaginated.totalElements + 1 : currentPaginated.totalElements
+      });
+    } else {
+      // Se não houver dados paginados (ex: primeira carga), apenas limpa para forçar refresh
+      this.paginatedArtistsSubject.next(null);
+    }
+    
+    // 2. Atualiza a lista reativa de artistas (usada em buscas simples)
+    const currentArtists = [...this.artistsSubject.value];
+    const index = currentArtists.findIndex(a => a.id === artist.id);
+    
+    const updatedArtist = { ...artist };
+    // Adiciona timestamp se houver imagem para bypassar cache do navegador no websocket
+    if (updatedArtist.urlImagemPerfilAssinada) {
+      updatedArtist.urlImagemPerfilAssinada = `${updatedArtist.urlImagemPerfilAssinada}?t=${Date.now()}`;
+    }
+
+    if (index !== -1) {
+      currentArtists[index] = updatedArtist;
+      this.artistsSubject.next(currentArtists);
+    } else {
+      this.artistsSubject.next([updatedArtist, ...currentArtists]);
+    }
+
+    // 3. Se o usuário estiver vendo os detalhes desse artista, atualiza o artista atual
+    if (this.currentArtistSubject.value?.id === artist.id) {
+      this.currentArtistSubject.next(updatedArtist);
+    }
+  }
+
+  /**
+   * Manipula a exclusão de um artista via WebSocket
+   */
+  handleWebSocketArtistDelete(artistId: number) {
+    // 1. Atualiza a paginação
+    const currentPaginated = this.paginatedArtistsSubject.value;
+    if (currentPaginated) {
+      const updatedContent = currentPaginated.content.filter(a => a.id !== artistId);
+      this.paginatedArtistsSubject.next({
+        ...currentPaginated,
+        content: updatedContent,
+        totalElements: currentPaginated.totalElements > 0 ? currentPaginated.totalElements - 1 : 0
+      });
+    }
+
+    // 2. Limpa caches
+    this.albumsCache.clear();
+
+    // 3. Remove da lista reativa simples
+    const currentArtists = this.artistsSubject.value;
+    this.artistsSubject.next(currentArtists.filter(a => a.id !== artistId));
+
+    // 4. Se o usuário estiver vendo os detalhes desse artista, limpa o artista atual
+    if (this.currentArtistSubject.value?.id === artistId) {
+      this.currentArtistSubject.next(null);
+    }
+  }
+
+  /**
+   * Manipula a exclusão de um álbum via WebSocket
+   */
+  handleWebSocketAlbumDelete(albumId: number, artistId: number) {
+    // Limpa o cache do artista
+    this.clearAlbumCache(artistId);
+
+    // Remove da lista de álbuns atual se for o artista que está sendo visualizado
+    const currentAlbums = this.albumsSubject.value;
+    this.albumsSubject.next(currentAlbums.filter(a => a.id !== albumId));
+  }
+
+  /**
+   * Manipula a criação ou atualização de um álbum via WebSocket para atualização em tempo real
    */
   handleWebSocketAlbumCreate(album: Album) {
     // 1. Limpa o cache do artista para que a próxima carga manual venha fresca
     this.clearAlbumCache(album.idArtista);
 
     // 2. Se a lista de álbuns atual for do artista do novo álbum, atualiza o Subject
-    // Isso faz com que a tela de detalhes atualize instantaneamente sem F5
-    const currentAlbums = this.albumsSubject.value;
+    const currentAlbums = [...this.albumsSubject.value];
+    const index = currentAlbums.findIndex(a => a.id === album.id);
     
-    // Verifica se já não existe (para evitar duplicidade se o próprio usuário criou)
-    if (!currentAlbums.find(a => a.id === album.id)) {
-      // Só adicionamos se a lista atual for do artista correto
-      // Como não guardamos o currentArtistId no Subject de álbuns, 
-      // uma forma simples é verificar se a lista está vazia ou se o primeiro álbum é do mesmo artista
-      const isSameArtist = currentAlbums.length === 0 || currentAlbums[0].idArtista === album.idArtista;
-      
-      if (isSameArtist) {
-        this.albumsSubject.next([...currentAlbums, album]);
+    const updatedAlbum = { ...album };
+    // Adiciona timestamp para bypassar cache do navegador no websocket
+    if (updatedAlbum.urlImagemCapaAssinada) {
+      updatedAlbum.urlImagemCapaAssinada = `${updatedAlbum.urlImagemCapaAssinada}?t=${Date.now()}`;
+    }
+
+    // Verifica se a lista atual pertence ao artista do álbum recebido
+    const isSameArtist = currentAlbums.length === 0 || currentAlbums[0].idArtista === album.idArtista;
+
+    if (isSameArtist) {
+      if (index !== -1) {
+        // Atualiza álbum existente
+        currentAlbums[index] = updatedAlbum;
+        this.albumsSubject.next(currentAlbums);
+      } else {
+        // Adiciona novo álbum
+        this.albumsSubject.next([...currentAlbums, updatedAlbum]);
       }
     }
   }
