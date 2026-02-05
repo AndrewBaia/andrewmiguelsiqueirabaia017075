@@ -147,37 +147,171 @@ FullStack/
 └── docker-compose.yml          # Orquestração de Containers
 ```
 
-### Fluxograma de Comunicação (Mermaid)
+### 🗺️ Mapa de Navegação e Fluxo de Dados
+
+Para uma compreensão profunda da arquitetura, apresentamos os diagramas de processo e navegação abaixo.
+
+#### 1. Ciclo de Vida da Aplicação (Execução)
+Este diagrama ilustra a jornada desde o deploy via Docker até a interação em tempo real.
+
+```mermaid
+flowchart TD
+    Start([Início]) style Start fill:#1ed760,stroke:#1db954,color:#000
+    
+    subgraph Deploy["Orquestração Docker"]
+        B[Clonar Repositório] --> C[Configurar Docker Compose]
+        C --> D{docker-compose up}
+    end
+
+    subgraph Runtime["Ecossistema Ativo"]
+        D --> E[Serviços em Containers]
+        E --> F["Frontend (React) :3001"]
+        E --> G["Backend (Spring Boot) :8080"]
+        E --> H["PostgreSQL :5432"]
+        E --> I["MinIO S3 :9000"]
+    end
+
+    subgraph Interaction["Fluxo de Operação"]
+        F --> J[Autenticação JWT]
+        J --> G
+        G --> K[Regras de Negócio & APIs]
+        K --> L[(Persistência DB)]
+        K --> M[(Storage S3)]
+        G -.->|STOMP| N[WebSocket Update]
+        N -.->|Reatividade| F
+    end
+
+    Interaction --> End([Fim]) style End fill:#1ed760,stroke:#1db954,color:#000
+```
+
+#### 2. Arquitetura de Navegação (Frontend)
+Estrutura reativa baseada em Contextos e Facade Pattern.
+
+```mermaid
+graph LR
+    subgraph Core["Core Engine (Contexts)"]
+        direction TB
+        C1[AuthContext]
+        C2[RateLimitContext]
+        C3[NotificationContext]
+    end
+
+    subgraph UI["Interface & Rotas"]
+        direction LR
+        L1[Login Page]
+        subgraph Main["Layout Spotify-Style"]
+            A1[SideNav]
+            A2[TopBar]
+            A3[Content Outlet]
+        end
+    end
+
+    subgraph Modules["Módulos de Negócio"]
+        M1[Gestão de Artistas]
+        M2[Discografia / Álbuns]
+        M3[Config. Regionais]
+    end
+
+    Core ==> UI
+    L1 --> Main
+    A3 --- M1
+    A3 --- M2
+    A3 --- M3
+    
+    style Core fill:#282828,stroke:#1ed760,stroke-width:2px,color:#fff
+    style UI fill:#121212,stroke:#535353,color:#fff
+    style Main fill:#181818,stroke:#1ed760,color:#fff
+```
+
+#### 3. Diagrama de Comunicação Técnica (Arquitetura)
+Visão técnica do tráfego de dados e camadas de performance.
 
 ```mermaid
 graph TD
-    User((Usuário / Swagger)) -->|HTTP Request| Nginx[Nginx Reverse Proxy]
-    Nginx -->|Port 3001| Frontend[Frontend React]
-    Nginx -->|Port 8080| Backend[Backend API]
+    User((Usuário / Swagger)) -->|Proxy| Nginx[Nginx Reverse Proxy]
     
-    Backend -->|Persistência| DB[(PostgreSQL)]
-    Backend -->|Upload/Download| MinIO[(MinIO S3 Storage)]
+    subgraph "Camada de Aplicação"
+        Nginx -->|Port 3001| Frontend[Frontend React]
+        Nginx -->|Port 8080| Backend[Backend API]
+    end
     
-    Backend -.->|Notificações STOMP| WS[WebSocket Channel]
-    WS -.->|Real-time Update| Frontend
+    subgraph "Camada de Dados"
+        Backend -->|JPA| DB[(PostgreSQL)]
+        Backend -->|S3 API| MinIO[(MinIO Storage)]
+    end
     
-    subgraph "Segurança & Performance"
-        Backend -->|Bucket4j| RL[Rate Limiting]
+    subgraph "Tempo Real & Cache"
+        Backend -.->|Notificações| WS[WebSocket]
+        WS -.->|Update| Frontend
         Frontend -->|RxJS| Cache[Facade Cache 2min]
     end
+
+    style Frontend fill:#1ed760,color:#000
+    style Backend fill:#1ed760,color:#000
+    style Cache fill:#fff,color:#000
 ```
 
 ---
 
-## Requisitos Implementados (Sênior)
+## 🚀 Acesso Rápido e Credenciais
 
-- [X] **Containers:** Orquestração completa via `docker-compose`.
-- [X] **Segurança:** JWT (5 min), Renovação de Token, Rate Limit (10 req/min).
-- [X] **Storage:** Integração MinIO com Presigned URLs (30 min) e visualização direta.
-- [X] **WebSocket:** Sincronização em tempo real entre Swagger e Frontend (POST, PUT, DELETE, Upload).
-- [X] **Sincronização:** Lógica de regionais da Polícia Civil com controle de "ativo" e versionamento.
-- [X] **Frontend Sênior:** Facade Pattern + BehaviorSubject (RxJS) com cache inteligente.
-- [X] **Qualidade:** 22 testes no Frontend e cobertura completa de Service no Backend.
+Para facilitar a avaliação, utilize as informações abaixo:
+
+| Serviço                | URL                                                                                             | Credenciais                     |
+| :---------------------- | :---------------------------------------------------------------------------------------------- | :------------------------------ |
+| **Frontend**      | [http://localhost:3001](http://localhost:3001)                                                     | `admin` / `admin321`        |
+| **Swagger UI**    | [http://localhost:8080/api/swagger-ui/index.html](http://localhost:8080/api/swagger-ui/index.html) | Token JWT Requerido             |
+| **MinIO Console** | [http://localhost:9001](http://localhost:9001)                                                     | `minioadmin` / `minioadmin` |
+| **Health Check**  | [http://localhost:8080/api/actuator/health](http://localhost:8080/api/actuator/health)             | -                               |
+
+---
+
+## 🧠 Comentários do Desenvolvedor (Desafios Sênior)
+
+O desenvolvimento deste projeto focou em resolver três desafios principais comuns em aplicações de alta escala:
+
+1. **Sincronia de Estado**: O uso do **Facade Pattern** com **RxJS** permitiu que o frontend gerenciasse um cache de 2 minutos, reduzindo a carga no servidor, enquanto o **WebSocket** garante que esse cache seja invalidado ou atualizado instantaneamente se houver mudanças externas (via Swagger ou outro usuário).
+2. **Resiliência no Rate Limit**: Implementei um sistema de Rate Limit que não apenas bloqueia o usuário, mas mantém a contagem regressiva persistente mesmo após o `F5`, garantindo que as regras de negócio do backend sejam respeitadas com uma UX clara.
+3. **Segurança de Ativos**: A integração com **MinIO** utiliza URLs pré-assinadas de 30 minutos, cumprindo rigorosamente o edital, mas mantendo a estabilidade da interface através de um proxy reverso no backend.
+
+---
+
+## 🛠️ Especificações Técnicas de Infraestrutura
+
+### Banco de Dados (PostgreSQL)
+
+- **Database**: `artist_album_db`
+- **Porta**: `5432`
+- **Migrações**: Flyway (V1 a V4)
+
+### Armazenamento (MinIO S3)
+
+- **Bucket**: `artist-album-covers`
+- **Expiração de Links**: 30 minutos (configurável via `application.yml`)
+
+### Segurança (JWT)
+
+- **Algoritmo**: HS256
+- **Expiração**: 5 minutos (com modal de renovação proativa aos 4min30s)
+
+---
+
+## 📖 Guia de Funcionalidades Principais
+
+### 1. Gestão de Artistas e Álbuns
+
+- Cadastro completo com upload de fotos.
+- **Sincronia em Tempo Real**: Experimente criar um artista pelo Swagger e veja-o aparecer no Frontend instantaneamente.
+- **Links S3**: No detalhe do artista/álbum, passe o mouse sobre a foto para ver o botão **"S3 LINK"**. Ele abre a URL real pré-assinada gerada pelo MinIO.
+
+### 2. Sistema de Busca e Ordenação
+
+- Busca com *debounce* (espera o usuário parar de digitar para filtrar).
+- Ordenação A-Z / Z-A que respeita o cache do Facade.
+
+### 3. Controle de Sessão
+
+- O sistema monitora seu token e avisa quando ele está prestes a expirar, permitindo renovar sem deslogar.
 
 ---
 
