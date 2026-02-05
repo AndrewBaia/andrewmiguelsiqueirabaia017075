@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,9 @@ class ArtistaServiceTest {
 
     @Mock
     private AlbumRepository albumRepository;
+
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
 
     @InjectMocks
     private ArtistaService artistaService;
@@ -70,9 +74,16 @@ class ArtistaServiceTest {
     void obterArtistaPorId_DeveRetornarArtista_QuandoExiste() {
         // Dado
         // Adicionamos álbuns fictícios à lista do artista para o size() retornar 3
-        artista.getAlbuns().add(new com.seplag.artistalbum.domain.model.Album());
-        artista.getAlbuns().add(new com.seplag.artistalbum.domain.model.Album());
-        artista.getAlbuns().add(new com.seplag.artistalbum.domain.model.Album());
+        com.seplag.artistalbum.domain.model.Album album1 = new com.seplag.artistalbum.domain.model.Album();
+        album1.setArtista(artista);
+        com.seplag.artistalbum.domain.model.Album album2 = new com.seplag.artistalbum.domain.model.Album();
+        album2.setArtista(artista);
+        com.seplag.artistalbum.domain.model.Album album3 = new com.seplag.artistalbum.domain.model.Album();
+        album3.setArtista(artista);
+
+        artista.getAlbuns().add(album1);
+        artista.getAlbuns().add(album2);
+        artista.getAlbuns().add(album3);
 
         when(artistaRepository.findById(1L)).thenReturn(Optional.of(artista));
 
@@ -116,19 +127,20 @@ class ArtistaServiceTest {
     @Test
     void excluirArtista_DeveExcluir_QuandoExiste() {
         // Dado
-        when(artistaRepository.existsById(1L)).thenReturn(true);
+        when(artistaRepository.findById(1L)).thenReturn(Optional.of(artista));
 
         // Quando
         artistaService.excluirArtista(1L);
 
         // Então
         verify(artistaRepository).deleteById(1L);
+        verify(messagingTemplate).convertAndSend(eq("/topic/artists/delete"), eq(1L));
     }
 
     @Test
     void excluirArtista_DeveLancarExcecao_QuandoNaoExiste() {
         // Dado
-        when(artistaRepository.existsById(1L)).thenReturn(false);
+        when(artistaRepository.findById(1L)).thenReturn(Optional.empty());
 
         // Quando & Então
         assertThatThrownBy(() -> artistaService.excluirArtista(1L))
