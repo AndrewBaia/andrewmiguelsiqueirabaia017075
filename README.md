@@ -72,22 +72,45 @@ Certifique-se de ter o **Docker** e o **Docker Compose** instalados.
 
 ## Como Executar os Testes
 
-### Backend
+### Backend (JUnit 5 + Mockito)
 
-A validação dos testes de backend pode ser feita de duas formas:
+A validação dos testes de backend foca na **lógica de negócio e integridade dos dados** na camada de serviço (`ArtistaService`), garantindo que as regras fundamentais do sistema estejam protegidas contra regressões.
 
-- **Via Docker (Recomendado):** Os testes unitários são executados automaticamente durante o processo de build das imagens ao rodar `docker-compose up --build`.
-- **Via IDE (IntelliJ/Eclipse):** Abra o projeto `backend`, navegue até a pasta `/src/test/java/com.seplag.artistalbum/ArtistServiceTest.java`, clique com o botão direito e selecione **'Run 'ArtistServiceTest.java''**.
+Para executar os testes:
 
-### Frontend
+- **Via Maven:** `cd backend; mvn test`
+- **Via Docker:** Executados automaticamente no build (`docker-compose up --build`).
 
-Para rodar os testes do frontend localmente:
+**Principais cenários testados:**
+
+- **CRUD de Artistas:** Validação de criação, busca, atualização e exclusão.
+
+* **Paginação:** Garante que a listagem principal respeita os limites de página do Spring Data.
+* **Conversão de DTOs e Links:** Valida se o sistema gera corretamente as URLs de proxy para o frontend e se a lógica de **Links Pré-assinados do MinIO** é disparada internamente.
+* **Tratamento de Erros:** Verifica se o sistema lança as exceções corretas para IDs inexistentes ou dados inválidos.
+
+### Frontend (Vitest + React Testing Library)
+
+O frontend conta com uma cobertura abrangente de **22 testes unitários** que garantem a qualidade da interface e a robustez da gestão de estado.
+
+Para executar os testes:
 
 ```bash
 cd frontend
 npm install
 npm test
 ```
+
+**Módulos e Funcionalidades Testadas:**
+
+- **`Facade.test.tsx` (Lógica de Cache & WebSocket):**
+  - Valida o **TTL de 2 minutos** do cache de álbuns.
+  - Verifica a invalidação automática de cache após expiração.
+  - Testa a **atualização em tempo real via WebSocket**, garantindo que a lista de álbuns seja atualizada sem refresh quando um novo álbum é criado.
+- **`ListaArtistasPage.test.tsx`:** Teste de listagem, busca com *debounce*, ordenação (A-Z/Z-A) e estados de carregamento.
+- **`LoginPage.test.tsx`:** Validação de formulário (Zod), fluxo de login e funcionalidade de "Acesso Avaliador".
+- **`RateLimitModal.test.tsx`:** Validação do comportamento do modal de limite de requisições e persistência do cronômetro flutuante.
+- **`TokenRenewalModal.test.tsx`:** Teste do fluxo de renovação de sessão antes da expiração do token JWT.
 
 ---
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiService } from '../services/api';
+import { appFacade } from '../services/facade';
 import { Album, CreateAlbumRequest, Artist } from '../types';
 import { useNotifications } from '../context/NotificationContext';
 import {
@@ -130,7 +131,7 @@ const FormularioAlbumPage: React.FC = () => {
       // Upload cover image if selected
       if (selectedFile && album.id) {
         try {
-          await apiService.uploadAlbumCover(album.id, selectedFile);
+          await appFacade.uploadAlbumCover(album.id, selectedFile);
           addNotification('Imagem de capa enviada com sucesso', 'success');
         } catch (uploadError) {
           addNotification('Álbum criado, mas falha ao enviar imagem de capa', 'error');
