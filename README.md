@@ -64,13 +64,13 @@ Certifique-se de ter o **Docker** e o **Docker Compose** instalados.
    *Este comando iniciará o Banco de Dados, MinIO, API Backend e o Frontend.*
 3. **Acessar a aplicação:**
 
-   - **Frontend:** [http://localhost:3001](http://localhost:3001)(Login: admin Senha: admin321)
+   - **Frontend:** [http://localhost:3001](http://localhost:3001)(Login: admin / Senha: admin321)
    - **API Documentation (Swagger):** [http://localhost:8080/api/swagger-ui/index.html](http://localhost:8080/api/swagger-ui/index.html)
    - **MinIO Console:** [http://localhost:9001](http://localhost:9001) (Login: `minioadmin` / `minioadmin`)
 
 ---
 
-## 🧪 Como Executar os Testes
+## Como Executar os Testes
 
 ### Backend
 
@@ -91,7 +91,7 @@ npm test
 
 ---
 
-## 📋 Requisitos Implementados (Sênior)
+## Requisitos Implementados (Sênior)
 
 - [X] **Containers:** Orquestração completa via `docker-compose`.
 - [X] **Segurança:** JWT (5 min), Renovação de Token, Rate Limit (10 req/min).
