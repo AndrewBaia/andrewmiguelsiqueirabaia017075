@@ -3,6 +3,7 @@ export interface Artist {
   nome: string;
   urlImagemPerfil?: string;
   urlImagemPerfilAssinada?: string;
+  urlS3Presigned?: string;
   quantidadeAlbuns?: number;
   albuns?: Album[];
   dataCriacao?: string;
@@ -16,6 +17,7 @@ export interface Album {
   nomeArtista?: string;
   urlImagemCapa?: string;
   urlImagemCapaAssinada?: string;
+  urlS3Presigned?: string;
   dataCriacao?: string;
   dataAtualizacao?: string;
 }

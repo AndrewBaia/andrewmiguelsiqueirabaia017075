@@ -11,6 +11,7 @@ class AppFacade {
   private artistsSubject = new BehaviorSubject<Artist[]>([]);
   private paginatedArtistsSubject = new BehaviorSubject<PaginatedResponse<Artist> | null>(null);
   private loadingArtistsSubject = new BehaviorSubject<boolean>(false);
+  private currentArtistSubject = new BehaviorSubject<Artist | null>(null);
 
   // Subjects para Álbuns
   private albumsSubject = new BehaviorSubject<Album[]>([]);
@@ -27,10 +28,12 @@ class AppFacade {
   public loadingArtists$: Observable<boolean> = this.loadingArtistsSubject.asObservable();
   public albums$: Observable<Album[]> = this.albumsSubject.asObservable();
   public loadingAlbums$: Observable<boolean> = this.loadingAlbumsSubject.asObservable();
+  public currentArtist$: Observable<Artist | null> = this.currentArtistSubject.asObservable();
 
   // Getters de valor atual
   get artistsValue() { return this.artistsSubject.value; }
   get albumsValue() { return this.albumsSubject.value; }
+  get currentArtistValue() { return this.currentArtistSubject.value; }
 
   // Métodos de Artista
   async loadArtists(page = 0, size = 10, sort = 'asc', search?: string) {
@@ -51,11 +54,9 @@ class AppFacade {
   }
 
   async getArtistById(id: number): Promise<Artist> {
-    // Tenta encontrar no cache do Subject primeiro
-    const cached = this.artistsSubject.value.find(a => a.id === id);
-    if (cached) return cached;
-    
-    return await apiService.getArtist(id);
+    const artist = await apiService.getArtist(id);
+    this.currentArtistSubject.next(artist);
+    return artist;
   }
 
   async createArtist(artist: CreateArtistRequest) {
@@ -66,23 +67,46 @@ class AppFacade {
 
   async updateArtist(id: number, artist: CreateArtistRequest) {
     const updated = await apiService.updateArtist(id, artist);
+    if (this.currentArtistSubject.value?.id === id) {
+      this.currentArtistSubject.next(updated);
+    }
     return updated;
   }
 
   async deleteArtist(id: number) {
     await apiService.deleteArtist(id);
+    if (this.currentArtistSubject.value?.id === id) {
+      this.currentArtistSubject.next(null);
+    }
   }
 
   async uploadArtistPhoto(artistId: number, file: File) {
     const updated = await apiService.uploadArtistPhoto(artistId, file);
-    // Atualiza o cache do artista se ele estiver na lista
-    const currentArtists = this.artistsSubject.value;
-    const index = currentArtists.findIndex(a => a.id === artistId);
-    if (index !== -1) {
-      currentArtists[index] = updated;
-      this.artistsSubject.next([...currentArtists]);
+    
+    // 1. Limpa o cache de artistas para que a próxima carga venha fresca
+    this.paginatedArtistsSubject.next(null);
+
+    const updatedArtist = { ...updated };
+    // Adiciona timestamp para forçar o refresh da imagem no navegador
+    if (updatedArtist.urlImagemPerfilAssinada) {
+      updatedArtist.urlImagemPerfilAssinada = `${updatedArtist.urlImagemPerfilAssinada}?t=${Date.now()}`;
     }
-    return updated;
+
+    // 2. Atualiza o artista atual se for o mesmo
+    if (this.currentArtistSubject.value?.id === artistId) {
+      this.currentArtistSubject.next(updatedArtist);
+    }
+
+    // 3. Atualiza o cache do artista se ele estiver na lista reativa
+    const currentArtists = [...this.artistsSubject.value];
+    const index = currentArtists.findIndex(a => a.id === artistId);
+    
+    if (index !== -1) {
+      currentArtists[index] = updatedArtist;
+      this.artistsSubject.next(currentArtists);
+    }
+    
+    return updatedArtist;
   }
 
   // Métodos de Álbum
@@ -149,7 +173,26 @@ class AppFacade {
 
   async uploadAlbumCover(albumId: number, file: File) {
     const result = await apiService.uploadAlbumCover(albumId, file);
-    this.albumsCache.clear(); // Limpa para garantir que a nova capa seja carregada
+    
+    // 1. Limpa o cache para garantir que a nova capa seja carregada do servidor
+    this.albumsCache.clear(); 
+    
+    // 2. Atualiza o Subject de álbuns imediatamente para refletir a nova imagem
+    const currentAlbums = [...this.albumsSubject.value];
+    const index = currentAlbums.findIndex(a => a.id === albumId);
+    
+    if (index !== -1) {
+      // Atualiza o objeto do álbum na lista reativa com o resultado da API (que já tem a nova URL)
+      // Adicionamos um timestamp na URL para forçar o navegador a ignorar o cache da imagem antiga
+      const updatedAlbum = { ...result };
+      if (updatedAlbum.urlImagemCapaAssinada) {
+        updatedAlbum.urlImagemCapaAssinada = `${updatedAlbum.urlImagemCapaAssinada}?t=${Date.now()}`;
+      }
+      
+      currentAlbums[index] = updatedAlbum;
+      this.albumsSubject.next(currentAlbums);
+    }
+    
     return result;
   }
 
