@@ -103,9 +103,9 @@ npm test
 
 ---
 
-## 🚀 Endpoints da API
+## Endpoints da API
 
-A documentação interativa completa pode ser acessada via Swagger em: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+A documentação interativa completa pode ser acessada via Swagger em: [http://localhost:8080/api/swagger-ui/index.html](http://localhost:8080/api/swagger-ui/index.html)
 
 ### Regionais
 
@@ -153,7 +153,7 @@ APIs de gerenciamento de álbuns.
 
 ---
 
-## 🗄️ Estrutura de Dados (Tabelas)
+## Estrutura de Dados (Tabelas)
 
 ### `artist`
 
