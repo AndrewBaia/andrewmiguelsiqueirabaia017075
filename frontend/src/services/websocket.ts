@@ -5,7 +5,7 @@ export class WebSocketService {
   private stompClient: any = null;
   private connected = false;
 
-  connect(onMessageReceived: (data: any) => void): void {
+  connect(onMessageReceived: (topic: string, data: any) => void): void {
     const socket = new SockJS('/ws');
     this.stompClient = Stomp.over(socket);
 
@@ -13,14 +13,21 @@ export class WebSocketService {
       this.connected = true;
       console.log('Connected to WebSocket');
 
-      this.stompClient.subscribe('/topic/albums', (message: any) => {
-        try {
-          const data = JSON.parse(message.body);
-          onMessageReceived(data);
-        } catch (e) {
-          onMessageReceived(message.body);
-        }
-      });
+      const subscribe = (topic: string) => {
+        this.stompClient.subscribe(topic, (message: any) => {
+          try {
+            const data = JSON.parse(message.body);
+            onMessageReceived(topic, data);
+          } catch (e) {
+            onMessageReceived(topic, message.body);
+          }
+        });
+      };
+
+      subscribe('/topic/albums');
+      subscribe('/topic/albums/delete');
+      subscribe('/topic/artists');
+      subscribe('/topic/artists/delete');
     }, (error: any) => {
       console.error('WebSocket connection error:', error);
       this.connected = false;

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { NotificationMessage, Album } from '../types';
+import { NotificationMessage, Album, Artist } from '../types';
 import { webSocketService } from '../services/websocket';
 import { appFacade } from '../services/facade';
 
@@ -20,17 +20,21 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
 
   useEffect(() => {
-    // Conectar ao WebSocket para notificações de álbuns
-    const handleWebSocketMessage = (data: any) => {
-      if (typeof data === 'object' && data.titulo) {
+    // Conectar ao WebSocket para notificações de álbuns e artistas
+    const handleWebSocketMessage = (topic: string, data: any) => {
+      if (topic === '/topic/albums') {
         const album = data as Album;
         addNotification(`Novo álbum cadastrado: ${album.titulo}`, 'info');
-        
-        // Se o álbum pertencer ao artista que está sendo visualizado, atualiza a lista
-        // O Facade gerencia se deve ou não atualizar baseado no estado atual
         appFacade.handleWebSocketAlbumCreate(album);
-      } else {
-        addNotification(String(data), 'info');
+      } else if (topic === '/topic/albums/delete') {
+        appFacade.handleWebSocketAlbumDelete(data.id, data.idArtista);
+      } else if (topic === '/topic/artists') {
+        const artist = data as Artist;
+        addNotification(`Novo artista cadastrado: ${artist.nome}`, 'info');
+        appFacade.handleWebSocketArtistCreate(artist);
+      } else if (topic === '/topic/artists/delete') {
+        const artistId = typeof data === 'number' ? data : parseInt(data);
+        appFacade.handleWebSocketArtistDelete(artistId);
       }
     };
 
