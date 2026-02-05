@@ -15,7 +15,7 @@ public class ConfiguracaoLimiteTaxa {
     public Bucket criarNovoBucket() {
         // 10 requisições por minuto
         return Bucket.builder()
-                .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
+                .addLimit(Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1))))
                 .build();
     }
 }
