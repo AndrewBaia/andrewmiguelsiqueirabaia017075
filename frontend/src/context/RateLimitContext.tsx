@@ -19,6 +19,7 @@ export const RateLimitProvider: React.FC<{ children: ReactNode }> = ({ children 
     setShowModal(false);
     // Limpa o localStorage para garantir que não persista entre reloads/logins
     localStorage.removeItem('rateLimitTime');
+    localStorage.removeItem('rateLimitMinimized');
     // Adiciona uma trava temporária para evitar que novos disparos ocorram imediatamente após o login
     localStorage.setItem('rateLimitResetAt', Date.now().toString());
   }, []);
@@ -35,6 +36,7 @@ export const RateLimitProvider: React.FC<{ children: ReactNode }> = ({ children 
     
     const expiration = Date.now() + (seconds * 1000);
     localStorage.setItem('rateLimitTime', expiration.toString());
+    localStorage.removeItem('rateLimitMinimized');
     
     setTimeLeft(seconds);
     setShowModal(true);
@@ -42,42 +44,57 @@ export const RateLimitProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const hideModal = useCallback(() => {
     setShowModal(false);
+    localStorage.setItem('rateLimitMinimized', 'true');
   }, []);
 
   useEffect(() => {
     // Tenta recuperar do localStorage ao inicializar
     const stored = localStorage.getItem('rateLimitTime');
+    const wasMinimized = localStorage.getItem('rateLimitMinimized') === 'true';
+
     if (stored) {
-      const diff = Math.round((parseInt(stored) - Date.now()) / 1000);
+      const expirationTime = parseInt(stored);
+      const diff = Math.round((expirationTime - Date.now()) / 1000);
+      
       if (diff > 0) {
         setTimeLeft(diff);
+        // Se ainda houver tempo, mostra o modal apenas se ele NÃO foi minimizado anteriormente
+        setShowModal(!wasMinimized);
       } else {
         localStorage.removeItem('rateLimitTime');
+        localStorage.removeItem('rateLimitMinimized');
       }
     }
   }, []);
 
   useEffect(() => {
-    if (timeLeft <= 0) {
-      setShowModal(false);
-      localStorage.removeItem('rateLimitTime');
-      return;
-    }
+    // Se não houver tempo inicial, não inicia o intervalo
+    if (timeLeft <= 0) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        const next = prev - 1;
-        if (next <= 0) {
-          clearInterval(timer);
+      const stored = localStorage.getItem('rateLimitTime');
+      if (stored) {
+        const expirationTime = parseInt(stored);
+        const diff = Math.round((expirationTime - Date.now()) / 1000);
+        
+        if (diff <= 0) {
+          setTimeLeft(0);
+          setShowModal(false);
           localStorage.removeItem('rateLimitTime');
-          return 0;
+          localStorage.removeItem('rateLimitMinimized');
+          clearInterval(timer);
+        } else {
+          // Atualiza o estado com o tempo real restante baseado no timestamp fixo
+          setTimeLeft(diff);
         }
-        return next;
-      });
+      } else {
+        setTimeLeft(0);
+        clearInterval(timer);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft > 0]); // Dependência simplificada para evitar reinícios desnecessários do intervalo
 
   const value = {
     showModal,

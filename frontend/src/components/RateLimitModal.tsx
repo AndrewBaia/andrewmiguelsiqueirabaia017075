@@ -1,54 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRateLimit } from '../context/RateLimitContext';
 
 export const RateLimitModal: React.FC = () => {
   const { showModal, timeLeft, hideModal } = useRateLimit();
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (timeLeft > 0) {
-      setVisible(true);
-      // Se showModal for true, significa que é um novo disparo ou ainda não foi minimizado
-      if (showModal) {
-        setIsMinimized(false);
-      }
-    } else {
-      setVisible(false);
-      setIsMinimized(false);
-      // Garante que o estado interno de minimização resete para o próximo disparo
-    }
-  }, [showModal, timeLeft]);
+  
+  // O estado visível depende apenas de haver tempo restante
+  const visible = timeLeft > 0;
+  
+  // O estado minimizado deve seguir estritamente o showModal do contexto
+  const isMinimized = !showModal;
 
   if (!visible) return null;
 
   const handleCloseModal = () => {
-    setIsMinimized(true);
-    hideModal(); // Avisa o contexto que o modal central não deve mais aparecer
+    hideModal();
   };
 
   return (
     <>
       {/* Modal Inicial (Centralizado) */}
       {!isMinimized && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-[#282828] p-8 rounded-lg shadow-2xl max-w-md w-full border border-[#333] transform animate-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-[2px] p-4 animate-in fade-in duration-300">
+          <div className="bg-[#282828] p-6 rounded-lg shadow-2xl max-w-sm w-full border border-[#333] transform animate-in zoom-in duration-300">
             <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-500/10 mb-6">
-                <span className="text-red-500 text-2xl">⚠️</span>
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500/10 mb-4">
+                <span className="text-red-500 text-xl">⚠️</span>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Limite de Requisições</h3>
-              <p className="text-spotify-subtext mb-8 text-lg leading-relaxed">
+              <h3 className="text-xl font-bold text-white mb-2">Limite de Requisições</h3>
+              <p className="text-spotify-subtext mb-6 text-sm leading-relaxed">
                 Você atingiu o limite de <span className="text-white font-bold">10 requisições por minuto</span>.
-                <br />
-                Por favor, aguarde o cronômetro zerar para continuar.
+                Aguarde o cronômetro para continuar.
               </p>
               
-              <div className="flex flex-col items-center mb-8">
-                <div className="text-5xl font-black text-spotify-green tabular-nums">
+              <div className="flex flex-col items-center mb-6">
+                <div className="text-4xl font-black text-spotify-green tabular-nums">
                   {timeLeft}s
                 </div>
-                <div className="w-full bg-[#121212] h-2 rounded-full mt-4 overflow-hidden">
+                <div className="w-full bg-[#121212] h-1.5 rounded-full mt-3 overflow-hidden">
                   <div 
                     className="bg-spotify-green h-full transition-all duration-1000 ease-linear"
                     style={{ width: `${(timeLeft / 60) * 100}%` }}
@@ -58,9 +46,9 @@ export const RateLimitModal: React.FC = () => {
 
               <button
                 onClick={handleCloseModal}
-                className="w-full py-4 bg-spotify-green text-black font-bold rounded-full hover:scale-105 transition-transform text-sm tracking-widest uppercase"
+                className="w-full py-3 bg-spotify-green text-black font-bold rounded-full hover:scale-105 transition-transform text-xs tracking-widest uppercase"
               >
-                ENTENDI, VOU AGUARDAR
+                ENTENDI
               </button>
             </div>
           </div>
@@ -109,4 +97,3 @@ export const RateLimitModal: React.FC = () => {
 };
 
 export default RateLimitModal;
-
