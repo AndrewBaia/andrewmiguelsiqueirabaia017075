@@ -41,6 +41,7 @@ services:
       SPRING_DATASOURCE_USERNAME: artist_user
       SPRING_DATASOURCE_PASSWORD: artist_pass
       MINIO_ENDPOINT: http://minio:9000
+      MINIO_PUBLIC_ENDPOINT: http://localhost:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       JWT_SECRET: mySecretKey1234567890123456789012345678901234567890

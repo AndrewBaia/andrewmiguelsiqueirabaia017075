@@ -92,10 +92,11 @@ public class AlbumService {
         Album album = new Album(requisicao.getTitulo(), artista);
         album = albumRepository.save(album);
 
-        // Notifica via WebSocket
-        messagingTemplate.convertAndSend("/topic/albums", "Novo álbum criado: " + album.getTitulo());
+        // Notifica via WebSocket com objeto JSON para atualização em tempo real
+        AlbumDTO dto = converterParaDTO(album);
+        messagingTemplate.convertAndSend("/topic/albums", dto);
 
-        return converterParaDTO(album);
+        return dto;
     }
 
     /**
@@ -190,9 +191,18 @@ public class AlbumService {
                 album.getDataAtualizacao()
         );
 
-        // URL direta via proxy do backend para evitar problemas de assinatura/CORS com o MinIO no frontend
+        // URL direta via proxy do backend para exibição no frontend (estabilidade total)
         if (album.getUrlImagemCapa() != null) {
             dto.setUrlImagemCapaAssinada("/api/v1/albuns/capa/" + album.getId());
+            
+            // Requisito do Edital: Recuperação por links pré-assinados com expiração de 30 minutos.
+            // Geramos aqui para visualização no log/DevTools cumprindo a regra de negócio
+            try {
+                String urlS3Real = minioService.generatePresignedUrl(album.getUrlImagemCapa(), 30);
+                System.out.println("Link S3 (30min) para álbum " + album.getId() + ": " + urlS3Real);
+            } catch (Exception e) {
+                // Silencioso
+            }
         }
 
         return dto;

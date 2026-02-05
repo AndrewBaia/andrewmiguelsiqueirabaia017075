@@ -15,12 +15,14 @@ import java.util.concurrent.TimeUnit;
 public class MinioService {
 
     private final MinioClient minioClient;
+    private final MinioClient minioClientPublic;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
 
     public MinioService(
             @Value("${minio.endpoint}") String endpoint,
+            @Value("${minio.public-endpoint}") String publicEndpoint,
             @Value("${minio.access-key}") String accessKey,
             @Value("${minio.secret-key}") String secretKey
     ) {
@@ -29,17 +31,18 @@ public class MinioService {
                 .credentials(accessKey, secretKey)
                 .region("us-east-1")
                 .build();
+        
+        this.minioClientPublic = MinioClient.builder()
+                .endpoint(publicEndpoint)
+                .credentials(accessKey, secretKey)
+                .region("us-east-1")
+                .build();
     }
 
     /**
      * Faz upload de um arquivo para o bucket.
-     * @param objectKey Nome do objeto no bucket
-     * @param data Conteúdo do arquivo
-     * @param contentType Tipo de conteúdo (MIME type)
-     * @throws Exception caso ocorra erro ao fazer upload
      */
     public void uploadFile(String objectKey, byte[] data, String contentType) throws Exception {
-        // Garantir que o bucket exista antes de enviar arquivo
         garantirBucket();
 
         minioClient.putObject(
@@ -54,8 +57,6 @@ public class MinioService {
 
     /**
      * Remove um arquivo do bucket.
-     * @param objectKey Nome do objeto a ser removido
-     * @throws Exception caso ocorra erro ao remover
      */
     public void deleteFile(String objectKey) throws Exception {
         minioClient.removeObject(
@@ -67,36 +68,21 @@ public class MinioService {
     }
 
     /**
-     * Gera uma URL pré-assinada para download temporário.
-     * @param objectKey Nome do objeto
-     * @param expirationSeconds Tempo de expiração da URL em segundos
-     * @return URL pré-assinada acessível externamente
-     * @throws Exception caso ocorra erro na geração da URL
+     * Gera uma URL pré-assinada para download temporário usando o cliente público.
      */
-    public String generatePresignedUrl(String objectKey, int expirationSeconds) throws Exception {
-        String url = minioClient.getPresignedObjectUrl(
+    public String generatePresignedUrl(String objectKey, int expirationMinutes) throws Exception {
+        return minioClientPublic.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
                         .method(Method.GET)
                         .bucket(bucketName)
                         .object(objectKey)
-                        .expiry(expirationSeconds, TimeUnit.SECONDS)
+                        .expiry(expirationMinutes, TimeUnit.MINUTES)
                         .build()
         );
-
-        // Se estiver rodando fora do Docker (localhost), precisamos garantir que a URL aponte para localhost
-        // O MinIO retorna a URL baseada no endpoint configurado (que no Docker é 'minio:9000')
-        if (url.contains("minio:9000")) {
-            url = url.replace("minio:9000", "localhost:9000");
-        }
-
-        return url;
     }
 
     /**
      * Baixa o arquivo completo do bucket.
-     * @param objectKey Nome do objeto
-     * @return Array de bytes do arquivo
-     * @throws Exception caso ocorra erro ao baixar
      */
     public byte[] downloadFile(String objectKey) throws Exception {
         try (var stream = minioClient.getObject(
@@ -110,9 +96,6 @@ public class MinioService {
 
     /**
      * Verifica se um arquivo existe no bucket.
-     * @param objectKey Nome do objeto
-     * @return true se existe, false se não existe
-     * @throws Exception caso ocorra erro na verificação
      */
     public boolean fileExists(String objectKey) throws Exception {
         try {
@@ -130,7 +113,6 @@ public class MinioService {
 
     /**
      * Garante que o bucket existe, criando-o caso não exista.
-     * @throws Exception caso ocorra erro na criação do bucket
      */
     private void garantirBucket() throws Exception {
         boolean existe = minioClient.bucketExists(

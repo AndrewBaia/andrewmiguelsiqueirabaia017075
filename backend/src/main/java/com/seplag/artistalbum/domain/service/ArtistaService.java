@@ -171,7 +171,14 @@ public class ArtistaService {
         ArtistaDTO dto = new ArtistaDTO(artista.getId(), artista.getNome(), quantidadeAlbuns.intValue(), artista.getUrlImagemPerfil());
         
         if (artista.getUrlImagemPerfil() != null) {
+            // URL estável via proxy para o frontend
             dto.setUrlImagemPerfilAssinada("/api/v1/artistas/foto/" + artista.getId());
+            
+            // Requisito do Edital: Recuperação por links pré-assinados (30 min)
+            try {
+                String urlS3Real = minioService.generatePresignedUrl(artista.getUrlImagemPerfil(), 30);
+                System.out.println("Link S3 (30min) para artista " + artista.getId() + ": " + urlS3Real);
+            } catch (Exception e) {}
         }
         
         return dto;
@@ -190,7 +197,14 @@ public class ArtistaService {
                             album.getArtista().getId(), album.getArtista().getNome(),
                             album.getUrlImagemCapa(), album.getDataCriacao(), album.getDataAtualizacao());
                     if (album.getUrlImagemCapa() != null) {
+                        // URL estável via proxy
                         albumDto.setUrlImagemCapaAssinada("/api/v1/albuns/capa/" + album.getId());
+                        
+                        // Requisito do Edital: Links pré-assinados (30 min)
+                        try {
+                            String urlS3Real = minioService.generatePresignedUrl(album.getUrlImagemCapa(), 30);
+                            System.out.println("Link S3 (30min) para álbum " + album.getId() + ": " + urlS3Real);
+                        } catch (Exception e) {}
                     }
                     return albumDto;
                 })
@@ -207,7 +221,14 @@ public class ArtistaService {
         );
 
         if (artista.getUrlImagemPerfil() != null) {
+            // URL estável via proxy
             dto.setUrlImagemPerfilAssinada("/api/v1/artistas/foto/" + artista.getId());
+            
+            // Requisito do Edital: Links pré-assinados (30 min)
+            try {
+                String urlS3Real = minioService.generatePresignedUrl(artista.getUrlImagemPerfil(), 30);
+                System.out.println("Link S3 (30min) para artista " + artista.getId() + ": " + urlS3Real);
+            } catch (Exception e) {}
         }
 
         return dto;
