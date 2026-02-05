@@ -114,15 +114,70 @@ npm test
 
 ---
 
+## Arquitetura e Fluxo do Sistema
+
+Abaixo, apresentamos a estrutura de pastas e o fluxograma de comunicação do projeto para facilitar a compreensão da banca avaliadora.
+
+### Estrutura de Pastas (Árvore)
+
+```text
+FullStack/
+├── backend/                    # API Spring Boot 3.2 (Java 21)
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/seplag/artistalbum/
+│   │   │   │   ├── application/    # Controllers e DTOs
+│   │   │   │   ├── domain/         # Entidades, Services e Ports
+│   │   │   │   └── infrastructure/ # Configurações, Segurança e Adapters
+│   │   │   └── resources/
+│   │   │       ├── db/migration/   # Scripts Flyway (V1 a V4)
+│   │   │       └── application.yml # Configurações da API
+│   │   └── test/                   # Testes Unitários (JUnit 5)
+│   └── pom.xml                     # Dependências Maven
+├── frontend/                   # React 18 + TypeScript + Tailwind
+│   ├── src/
+│   │   ├── components/             # Componentes Reutilizáveis (Modais, Skeletons)
+│   │   ├── context/                # Gerenciamento de Estado (Auth, RateLimit, Notificações)
+│   │   ├── pages/                  # Páginas Principais (Listagem, Detalhes, Formulários)
+│   │   ├── services/               # API (Axios), Facade Pattern e WebSocket
+│   │   ├── test/                   # Testes Unitários (Vitest)
+│   │   └── types/                  # Definições de Tipos TypeScript
+│   └── package.json                # Scripts e Dependências NPM
+├── docker/                     # Dockerfiles e Nginx Config
+└── docker-compose.yml          # Orquestração de Containers
+```
+
+### Fluxograma de Comunicação (Mermaid)
+
+```mermaid
+graph TD
+    User((Usuário / Swagger)) -->|HTTP Request| Nginx[Nginx Reverse Proxy]
+    Nginx -->|Port 3001| Frontend[Frontend React]
+    Nginx -->|Port 8080| Backend[Backend API]
+    
+    Backend -->|Persistência| DB[(PostgreSQL)]
+    Backend -->|Upload/Download| MinIO[(MinIO S3 Storage)]
+    
+    Backend -.->|Notificações STOMP| WS[WebSocket Channel]
+    WS -.->|Real-time Update| Frontend
+    
+    subgraph "Segurança & Performance"
+        Backend -->|Bucket4j| RL[Rate Limiting]
+        Frontend -->|RxJS| Cache[Facade Cache 2min]
+    end
+```
+
+---
+
 ## Requisitos Implementados (Sênior)
 
 - [X] **Containers:** Orquestração completa via `docker-compose`.
 - [X] **Segurança:** JWT (5 min), Renovação de Token, Rate Limit (10 req/min).
-- [X] **Storage:** Integração MinIO com Presigned URLs (30 min).
-- [X] **WebSocket:** Notificações em tempo real no frontend ao cadastrar álbuns.
+- [X] **Storage:** Integração MinIO com Presigned URLs (30 min) e visualização direta.
+- [X] **WebSocket:** Sincronização em tempo real entre Swagger e Frontend (POST, PUT, DELETE, Upload).
 - [X] **Sincronização:** Lógica de regionais da Polícia Civil com controle de "ativo" e versionamento.
-- [X] **Frontend Sênior:** Facade Pattern + BehaviorSubject (RxJS).
-- [X] **Qualidade:** Testes unitários e Health Checks (`/actuator/health`) - http://localhost:8080/api/actuator/health
+- [X] **Frontend Sênior:** Facade Pattern + BehaviorSubject (RxJS) com cache inteligente.
+- [X] **Qualidade:** 22 testes no Frontend e cobertura completa de Service no Backend.
 
 ---
 
