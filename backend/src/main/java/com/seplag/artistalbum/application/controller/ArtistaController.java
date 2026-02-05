@@ -84,7 +84,7 @@ public class ArtistaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/foto")
+    @PostMapping(value = "/{id}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Fazer upload da foto de perfil do artista")
     public ResponseEntity<ArtistaDTO> fazerUploadFotoPerfil(
             @Parameter(description = "ID do artista") @PathVariable Long id,

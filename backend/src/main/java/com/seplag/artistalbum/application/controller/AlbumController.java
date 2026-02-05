@@ -87,7 +87,7 @@ public class AlbumController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/capa")
+    @PostMapping(value = "/{id}/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Fazer upload da imagem de capa do álbum")
     public ResponseEntity<AlbumDTO> fazerUploadImagemCapa(
             @Parameter(description = "ID do álbum") @PathVariable Long id,
