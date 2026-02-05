@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { NotificationMessage } from '../types';
+import { NotificationMessage, Album } from '../types';
 import { webSocketService } from '../services/websocket';
+import { appFacade } from '../services/facade';
 
 interface NotificationContextType {
   notifications: NotificationMessage[];
@@ -20,8 +21,17 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   useEffect(() => {
     // Conectar ao WebSocket para notificações de álbuns
-    const handleWebSocketMessage = (message: string) => {
-      addNotification(message, 'info');
+    const handleWebSocketMessage = (data: any) => {
+      if (typeof data === 'object' && data.titulo) {
+        const album = data as Album;
+        addNotification(`Novo álbum cadastrado: ${album.titulo}`, 'info');
+        
+        // Se o álbum pertencer ao artista que está sendo visualizado, atualiza a lista
+        // O Facade gerencia se deve ou não atualizar baseado no estado atual
+        appFacade.handleWebSocketAlbumCreate(album);
+      } else {
+        addNotification(String(data), 'info');
+      }
     };
 
     webSocketService.connect(handleWebSocketMessage);

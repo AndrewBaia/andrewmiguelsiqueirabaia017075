@@ -129,6 +129,8 @@ class AppFacade {
   async createAlbum(album: CreateAlbumRequest) {
     const result = await apiService.createAlbum(album);
     this.clearAlbumCache(album.idArtista);
+    // Força a atualização da lista de álbuns se estivermos na página do artista
+    this.loadAlbumsByArtist(album.idArtista);
     return result;
   }
 
@@ -149,6 +151,30 @@ class AppFacade {
     const result = await apiService.uploadAlbumCover(albumId, file);
     this.albumsCache.clear(); // Limpa para garantir que a nova capa seja carregada
     return result;
+  }
+
+  /**
+   * Manipula a criação de um álbum via WebSocket para atualização em tempo real
+   */
+  handleWebSocketAlbumCreate(album: Album) {
+    // 1. Limpa o cache do artista para que a próxima carga manual venha fresca
+    this.clearAlbumCache(album.idArtista);
+
+    // 2. Se a lista de álbuns atual for do artista do novo álbum, atualiza o Subject
+    // Isso faz com que a tela de detalhes atualize instantaneamente sem F5
+    const currentAlbums = this.albumsSubject.value;
+    
+    // Verifica se já não existe (para evitar duplicidade se o próprio usuário criou)
+    if (!currentAlbums.find(a => a.id === album.id)) {
+      // Só adicionamos se a lista atual for do artista correto
+      // Como não guardamos o currentArtistId no Subject de álbuns, 
+      // uma forma simples é verificar se a lista está vazia ou se o primeiro álbum é do mesmo artista
+      const isSameArtist = currentAlbums.length === 0 || currentAlbums[0].idArtista === album.idArtista;
+      
+      if (isSameArtist) {
+        this.albumsSubject.next([...currentAlbums, album]);
+      }
+    }
   }
 }
 
