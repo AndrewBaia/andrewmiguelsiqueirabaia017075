@@ -1,41 +1,42 @@
 {
   "compilerOptions": {
+    // Alvo do ECMAScript
     "target": "ES2020",
+    // Utiliza 'define' para campos de classe
     "useDefineForClassFields": true,
+    // Bibliotecas padrão incluídas
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    // Módulo utilizado
     "module": "ESNext",
+    // Ignora verificação de definições das bibliotecas
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Modo de empacotador */
+    // Resolução de módulos compátivel com bundlers modernos como Vite
     "moduleResolution": "bundler",
+    // Permite importar arquivos .ts diretamente
     "allowImportingTsExtensions": true,
+    // Permite importar módulos JSON
     "resolveJsonModule": true,
+    // Garante módulos isolados, bom para projetos React/Vite
     "isolatedModules": true,
+    // Não gera arquivos de saída
     "noEmit": true,
+    // Suporte ao JSX com o novo transformador do React
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Regras de verificação */
+    // Habilita verificações estritas
     "strict": true,
+    // Reporta variáveis locais não utilizadas
     "noUnusedLocals": true,
+    // Reporta parâmetros não utilizados
     "noUnusedParameters": true,
+    // Garante que casos de switch não caiam sem tratamento
     "noFallthroughCasesInSwitch": true
   },
+  // Inclui todos os arquivos na pasta 'src'
   "include": ["src"],
+  // Referência para configuração de build Node
   "references": [{ "path": "./tsconfig.node.json" }]
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
