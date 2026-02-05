@@ -117,7 +117,11 @@ public class AlbumService {
         album.setArtista(artista);
         album = albumRepository.save(album);
 
-        return converterParaDTO(album);
+        AlbumDTO dto = converterParaDTO(album);
+        // Notifica via WebSocket para atualização em tempo real no frontend
+        messagingTemplate.convertAndSend("/topic/albums", dto);
+
+        return dto;
     }
 
     /**
@@ -128,6 +132,8 @@ public class AlbumService {
     public void excluirAlbum(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Álbum não encontrado com id: " + id));
+
+        Long idArtista = album.getArtista().getId();
 
         // Remove a capa do MinIO se existir
         if (album.getUrlImagemCapa() != null) {
@@ -140,6 +146,11 @@ public class AlbumService {
         }
 
         albumRepository.delete(album);
+        
+        // Notifica via WebSocket para remover da lista no frontend
+        // Enviamos um objeto com id e idArtista para o frontend saber qual lista atualizar
+        messagingTemplate.convertAndSend("/topic/albums/delete", 
+            java.util.Map.of("id", id, "idArtista", idArtista));
     }
 
     /**
@@ -168,7 +179,11 @@ public class AlbumService {
             album.setUrlImagemCapa(chaveObjeto);
             album = albumRepository.save(album);
 
-            return converterParaDTO(album);
+            AlbumDTO dto = converterParaDTO(album);
+            // Notifica via WebSocket para atualização em tempo real no frontend
+            messagingTemplate.convertAndSend("/topic/albums", dto);
+
+            return dto;
         } catch (Exception e) {
             throw new RuntimeException("Falha ao fazer upload da capa do álbum", e);
         }

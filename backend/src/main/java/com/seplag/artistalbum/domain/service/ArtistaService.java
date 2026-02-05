@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,11 +29,14 @@ public class ArtistaService {
     private final ArtistaRepository artistaRepository;
     private final AlbumRepository albumRepository;
     private final MinioService minioService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public ArtistaService(ArtistaRepository artistaRepository, AlbumRepository albumRepository, MinioService minioService) {
+    public ArtistaService(ArtistaRepository artistaRepository, AlbumRepository albumRepository, 
+                          MinioService minioService, SimpMessagingTemplate messagingTemplate) {
         this.artistaRepository = artistaRepository;
         this.albumRepository = albumRepository;
         this.minioService = minioService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     /**
@@ -95,7 +99,12 @@ public class ArtistaService {
 
         Artista artista = new Artista(requisicao.getNome());
         artista = artistaRepository.save(artista);
-        return converterParaDTO(artista);
+        
+        ArtistaDTO dto = converterParaDTOComAlbuns(artista);
+        // Notifica via WebSocket para atualização em tempo real no frontend
+        messagingTemplate.convertAndSend("/topic/artists", dto);
+        
+        return dto;
     }
 
     /**
@@ -118,7 +127,12 @@ public class ArtistaService {
 
         artista.setNome(requisicao.getNome());
         artista = artistaRepository.save(artista);
-        return converterParaDTO(artista);
+        
+        ArtistaDTO dto = converterParaDTOComAlbuns(artista);
+        // Notifica via WebSocket para atualização em tempo real no frontend
+        messagingTemplate.convertAndSend("/topic/artists", dto);
+        
+        return dto;
     }
 
     /**
@@ -127,10 +141,21 @@ public class ArtistaService {
      * @param id ID do artista a ser excluído.
      */
     public void excluirArtista(Long id) {
-        if (!artistaRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Artista não encontrado com id: " + id);
+        Artista artista = artistaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Artista não encontrado com id: " + id));
+        
+        // Remove foto do MinIO se existir
+        if (artista.getUrlImagemPerfil() != null) {
+            try {
+                minioService.deleteFile(artista.getUrlImagemPerfil());
+            } catch (Exception e) {
+                System.err.println("Falha ao excluir foto do artista: " + e.getMessage());
+            }
         }
+
         artistaRepository.deleteById(id);
+        // Notifica via WebSocket para remover da lista no frontend
+        messagingTemplate.convertAndSend("/topic/artists/delete", id);
     }
 
     public ArtistaDTO fazerUploadFotoPerfil(Long id, byte[] bytes, String originalFilename, String tipoConteudo) {
@@ -150,7 +175,11 @@ public class ArtistaService {
             artista.setUrlImagemPerfil(chaveObjeto);
             artista = artistaRepository.save(artista);
 
-            return converterParaDTOComAlbuns(artista);
+            ArtistaDTO dto = converterParaDTOComAlbuns(artista);
+            // Notifica via WebSocket para atualização em tempo real no frontend
+            messagingTemplate.convertAndSend("/topic/artists", dto);
+
+            return dto;
         } catch (Exception e) {
             throw new RuntimeException("Falha ao fazer upload da foto de perfil", e);
         }
