@@ -53,7 +53,7 @@ Certifique-se de ter o **Docker** e o **Docker Compose** instalados.
 
    ```bash
    git clone https://github.com/AndrewBaia/andrewmiguelsiqueirabaia017075.git
-   cd SEPLAG-2026-PSS/FullStack
+   cd andrewmiguelsiqueirabaia017075
    ```
 2. **Subir os containers:**
 
@@ -65,7 +65,7 @@ Certifique-se de ter o **Docker** e o **Docker Compose** instalados.
 3. **Acessar a aplicação:**
 
    - **Frontend:** [http://localhost:3001](http://localhost:3001)(Login: admin Senha: admin321)
-   - **API Documentation (Swagger):** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+   - **API Documentation (Swagger):** [http://localhost:8080/api/swagger-ui/index.html](http://localhost:8080/api/swagger-ui/index.html)
    - **MinIO Console:** [http://localhost:9001](http://localhost:9001) (Login: `minioadmin` / `minioadmin`)
 
 ---
