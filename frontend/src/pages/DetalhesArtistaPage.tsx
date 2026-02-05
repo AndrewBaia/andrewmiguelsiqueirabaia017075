@@ -13,7 +13,8 @@ import {
   Disc,
   UserX,
   User,
-  Camera
+  Camera,
+  ExternalLink
 } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment, useRef } from 'react';
@@ -29,6 +30,9 @@ const DetalhesArtistaPage: React.FC = () => {
   const { addNotification } = useNotifications();
 
   useEffect(() => {
+    const artistSubscription = appFacade.currentArtist$.subscribe((data: Artist | null) => {
+      setArtist(data);
+    });
     const albumsSubscription = appFacade.albums$.subscribe((data: Album[]) => {
       setAlbums(data);
     });
@@ -37,6 +41,7 @@ const DetalhesArtistaPage: React.FC = () => {
     });
 
     return () => {
+      artistSubscription.unsubscribe();
       albumsSubscription.unsubscribe();
       loadingSubscription.unsubscribe();
     };
@@ -66,8 +71,7 @@ const DetalhesArtistaPage: React.FC = () => {
 
     setUploadingPhoto(true);
     try {
-      const updatedArtist = await appFacade.uploadArtistPhoto(parseInt(id), file);
-      setArtist(updatedArtist);
+      await appFacade.uploadArtistPhoto(parseInt(id), file);
       addNotification('Foto de perfil atualizada com sucesso', 'success');
     } catch (error) {
       addNotification('Falha ao fazer upload da foto', 'error');
@@ -103,6 +107,14 @@ const DetalhesArtistaPage: React.FC = () => {
       } catch (error) {
         addNotification('Falha ao excluir artista', 'error');
       }
+    }
+  };
+
+  const handleViewPresignedUrl = (url?: string) => {
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      addNotification('Link pré-assinado não disponível para esta imagem', 'info');
     }
   };
 
@@ -160,8 +172,20 @@ const DetalhesArtistaPage: React.FC = () => {
                 )}
                 
                 {/* Overlay de Upload */}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-2">
                   <Camera className="h-6 w-6 md:h-8 md:w-8 lg:h-10 lg:w-10 text-white" />
+                  {artist.urlS3Presigned && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewPresignedUrl(artist.urlS3Presigned);
+                      }}
+                      className="bg-spotify-green text-black text-[10px] font-bold py-1 px-2 rounded-full flex items-center gap-1 hover:scale-105 transition-transform"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      S3 LINK
+                    </button>
+                  )}
                 </div>
                 
                 {uploadingPhoto && (
@@ -245,7 +269,20 @@ const DetalhesArtistaPage: React.FC = () => {
                   )}
 
                   {/* Overlay Controls */}
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    {/* Botão para Link Pré-assinado */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleViewPresignedUrl(album.urlS3Presigned);
+                      }}
+                      className="h-8 w-8 bg-spotify-green text-black rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
+                      title="Visualizar Link Pré-assinado (S3)"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </button>
+
                     <Menu as="div" className="relative">
                       <Menu.Button className="h-8 w-8 bg-black/60 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-black transition-colors">
                         <MoreVertical className="h-4 w-4" />
