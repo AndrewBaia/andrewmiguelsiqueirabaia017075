@@ -33,7 +33,7 @@ Diante dos critérios de avaliação (Arquitetura e Integração), a aplicação
 
 Certifique-se de ter o **Docker** e o **Docker Compose** instalados.
 
-### 1. Clonar o repositório
+### 1. Clonar o repositório e cole no CMD do Windows ou na sua IDE de preferência
 
 ```bash
 git clone https://github.com/AndrewBaia/andrewmiguelsiqueirabaia017075.git
@@ -50,9 +50,6 @@ cd andrewmiguelsiqueirabaia017075
 Para garantir que não existam conflitos de portas ou volumes de execuções anteriores, recomenda-se realizar uma limpeza no ambiente Docker antes de subir a aplicação:
 
 ```bash
-# Para todos os containers em execução e remove imagens antigas
-docker rmi -f $(docker ps -aq)
-
 # Limpa todos os containers, redes e volumes não utilizados (Ambiente Limpo)
 docker system prune -a --volumes -f
 ```
