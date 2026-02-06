@@ -24,16 +24,23 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     const handleWebSocketMessage = (topic: string, data: any) => {
       if (topic === '/topic/albums') {
         const album = data as Album;
-        addNotification(`Novo álbum cadastrado: ${album.titulo}`, 'info');
+        addNotification(`Álbum atualizado: ${album.titulo}`, 'info');
         appFacade.handleWebSocketAlbumCreate(album);
       } else if (topic === '/topic/albums/delete') {
+        addNotification(`Álbum excluído com sucesso`, 'success');
         appFacade.handleWebSocketAlbumDelete(data.id, data.idArtista);
       } else if (topic === '/topic/artists') {
         const artist = data as Artist;
-        addNotification(`Novo artista cadastrado: ${artist.nome}`, 'info');
+        // Se o artista não tiver foto, provavelmente foi uma remoção de foto
+        if (artist.urlImagemPerfil === null || artist.urlImagemPerfil === undefined) {
+          addNotification(`Foto do artista removida: ${artist.nome}`, 'info');
+        } else {
+          addNotification(`Artista atualizado: ${artist.nome}`, 'info');
+        }
         appFacade.handleWebSocketArtistCreate(artist);
       } else if (topic === '/topic/artists/delete') {
         const artistId = typeof data === 'number' ? data : parseInt(data);
+        addNotification(`Artista excluído com sucesso`, 'success');
         appFacade.handleWebSocketArtistDelete(artistId);
       }
     };
