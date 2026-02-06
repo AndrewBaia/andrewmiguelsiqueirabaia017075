@@ -134,7 +134,7 @@ class ArtistaServiceTest {
 
         // Então
         verify(artistaRepository).deleteById(1L);
-        verify(messagingTemplate).convertAndSend(eq("/topic/artists/delete"), eq(1L));
+        verify(messagingTemplate).convertAndSend(eq("/topic/artists/delete"), eq("1"));
     }
 
     @Test

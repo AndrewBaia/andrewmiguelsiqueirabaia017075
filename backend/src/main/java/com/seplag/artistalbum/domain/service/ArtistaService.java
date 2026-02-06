@@ -100,7 +100,7 @@ public class ArtistaService {
         Artista artista = new Artista(requisicao.getNome());
         artista = artistaRepository.save(artista);
         
-        ArtistaDTO dto = converterParaDTOComAlbuns(artista);
+        ArtistaDTO dto = converterParaDTO(artista);
         // Notifica via WebSocket para atualização em tempo real no frontend
         messagingTemplate.convertAndSend("/topic/artists", dto);
         
@@ -128,11 +128,11 @@ public class ArtistaService {
         artista.setNome(requisicao.getNome());
         artista = artistaRepository.save(artista);
         
-        ArtistaDTO dto = converterParaDTOComAlbuns(artista);
+        ArtistaDTO dto = converterParaDTO(artista); // Usar converterParaDTO simples para evitar carregar todos os álbuns desnecessariamente no WebSocket
         // Notifica via WebSocket para atualização em tempo real no frontend
         messagingTemplate.convertAndSend("/topic/artists", dto);
         
-        return dto;
+        return converterParaDTOComAlbuns(artista); // Retorna com álbuns para o chamador da API
     }
 
     /**
@@ -155,7 +155,8 @@ public class ArtistaService {
 
         artistaRepository.deleteById(id);
         // Notifica via WebSocket para remover da lista no frontend
-        messagingTemplate.convertAndSend("/topic/artists/delete", id);
+        // Forçamos o envio como String para garantir que o STOMP não se confunda com o tipo Long
+        messagingTemplate.convertAndSend("/topic/artists/delete", String.valueOf(id));
     }
 
     public ArtistaDTO fazerUploadFotoPerfil(Long id, byte[] bytes, String originalFilename, String tipoConteudo) {
@@ -175,11 +176,11 @@ public class ArtistaService {
             artista.setUrlImagemPerfil(chaveObjeto);
             artista = artistaRepository.save(artista);
 
-            ArtistaDTO dto = converterParaDTOComAlbuns(artista);
+            ArtistaDTO dto = converterParaDTO(artista);
             // Notifica via WebSocket para atualização em tempo real no frontend
             messagingTemplate.convertAndSend("/topic/artists", dto);
 
-            return dto;
+            return converterParaDTOComAlbuns(artista);
         } catch (Exception e) {
             throw new RuntimeException("Falha ao fazer upload da foto de perfil", e);
         }
@@ -187,6 +188,34 @@ public class ArtistaService {
 
     public byte[] obterBytesFotoPerfil(String urlImagemPerfil) throws Exception {
         return minioService.downloadFile(urlImagemPerfil);
+    }
+
+    /**
+     * Remove a foto de perfil do artista do MinIO e limpa a referência no banco de dados.
+     *
+     * @param id ID do artista.
+     * @return DTO atualizado do artista.
+     */
+    public ArtistaDTO removerFotoPerfil(Long id) {
+        Artista artista = artistaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Artista não encontrado com id: " + id));
+
+        if (artista.getUrlImagemPerfil() != null) {
+            try {
+                minioService.deleteFile(artista.getUrlImagemPerfil());
+                artista.setUrlImagemPerfil(null);
+                artista = artistaRepository.save(artista);
+
+                ArtistaDTO dto = converterParaDTO(artista);
+                // Notifica via WebSocket para atualização em tempo real no frontend
+                messagingTemplate.convertAndSend("/topic/artists", dto);
+
+                return converterParaDTOComAlbuns(artista);
+            } catch (Exception e) {
+                throw new RuntimeException("Falha ao remover a foto de perfil", e);
+            }
+        }
+        return converterParaDTOComAlbuns(artista);
     }
 
     /**

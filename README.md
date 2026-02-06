@@ -172,6 +172,7 @@ APIs de gerenciamento de artistas.
 - `DELETE /v1/artistas/{id}`: Excluir um artista.
 - `GET /v1/artistas/pesquisa`: Pesquisar artistas por nome.
 - `POST /v1/artistas/{id}/foto`: Fazer upload da foto de perfil do artista.
+- `DELETE /v1/artistas/{id}/foto`: Remover a foto de perfil do artista.
 - `GET /v1/artistas/foto/{idArtista}`: Obter foto de perfil do artista.
 
 ### Álbuns

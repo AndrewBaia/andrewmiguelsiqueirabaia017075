@@ -103,6 +103,13 @@ public class ArtistaController {
         }
     }
 
+    @DeleteMapping("/{id}/foto")
+    @Operation(summary = "Remover a foto de perfil do artista")
+    public ResponseEntity<ArtistaDTO> removerFotoPerfil(@Parameter(description = "ID do artista") @PathVariable Long id) {
+        ArtistaDTO artista = artistaService.removerFotoPerfil(id);
+        return ResponseEntity.ok(artista);
+    }
+
     @GetMapping("/foto/{idArtista}")
     @Operation(summary = "Obter foto de perfil do artista")
     public ResponseEntity<Resource> obterFotoPerfilArtista(@Parameter(description = "ID do artista") @PathVariable Long idArtista) {
