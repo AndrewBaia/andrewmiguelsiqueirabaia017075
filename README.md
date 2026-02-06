@@ -47,10 +47,9 @@ cd andrewmiguelsiqueirabaia017075
 
 ### 3. Preparar o Ambiente (Limpeza do Docker)
 
-Para garantir que não existam conflitos de portas ou volumes de execuções anteriores, recomenda-se realizar uma limpeza no ambiente Docker antes de subir a aplicação:
+Para garantir que não existam conflitos de portas ou volumes de execuções anteriores, recomenda-se realizar uma limpeza no ambiente Docker antes de subir a aplicação: Limpa todos os containers, redes e volumes não utilizados (Ambiente Limpo)
 
 ```bash
-# Limpa todos os containers, redes e volumes não utilizados (Ambiente Limpo)
 docker system prune -a --volumes -f
 ```
 
